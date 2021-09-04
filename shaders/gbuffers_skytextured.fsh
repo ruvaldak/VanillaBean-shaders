@@ -1,15 +1,6 @@
-/*
-    XorDev's "Default Shaderpack"
-
-    This was put together by @XorDev to make it easier for anyone to make their own shaderpacks in Minecraft (Optifine).
-    You can do whatever you want with this code! Credit is not necessary, but always appreciated!
-
-    You can find more information about shaders in Optfine here:
-    https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt
-
-*/
-//Declare GL version.
 #version 120
+
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 //Diffuse (color) texture.
 uniform sampler2D texture;
@@ -32,5 +23,6 @@ void main()
     vec4 col = color * vec4(light,1) * texture2D(texture,coord0);
 
     //Output the result.
+    /*DRAWBUFFERS:0*/
     gl_FragData[0] = col;
 }

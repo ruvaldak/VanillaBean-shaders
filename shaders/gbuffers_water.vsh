@@ -17,7 +17,6 @@ uniform mat4 gbufferModelViewInverse;
 varying vec4 color;
 varying vec2 coord0;
 varying vec2 coord1;
-//varying vec2 texcoord;
 
 uniform int frameCounter;
 uniform float frameTimeCounter;
@@ -49,7 +48,6 @@ void main()
     //Output diffuse and lightmap texture coordinates to fragment shader.
     coord0 = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
     coord1 = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
-    //texcoord = gl_Position * 0.5 + 0.5;
 
     gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
     //float dither = Bayer64(gl_Position.xy);

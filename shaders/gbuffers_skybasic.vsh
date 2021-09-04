@@ -12,15 +12,12 @@ uniform mat4 gbufferModelViewInverse;
 
 //Pass vertex information to fragment shader.
 varying vec4 color;
-varying vec2 coord0;
 
 uniform int frameCounter;
 
 uniform float viewWidth, viewHeight;
-uniform float frameTimeCounter;
 
 #include "bsl_lib/util/jitter.glsl"
-//#include "/bsl_lib/util/dither.glsl"
 
 void main()
 {
@@ -30,13 +27,13 @@ void main()
 
     //Output position and fog to fragment shader.
     gl_Position = gl_ProjectionMatrix * gbufferModelView * vec4(pos,1);
-    //float dither = Bayer64(gl_Position.xy);
-    //dither = fract(16.0 * frameTimeCounter + dither);
+    gl_FogFragCoord = length(pos);
 
     //Output color to fragment shader.
-    color = vec4(gl_Color.rgb, gl_Color.a);
-    //Output diffuse texture coordinates to fragment shader.
-    coord0 = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+    color = gl_Color;
+
+    // this is the good code
+    do { /* } */ } while (false);
 
     gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 }

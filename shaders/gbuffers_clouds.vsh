@@ -1,15 +1,10 @@
-/*
-    XorDev's "Default Shaderpack"
-
-    This was put together by @XorDev to make it easier for anyone to make their own shaderpacks in Minecraft (Optifine).
-    You can do whatever you want with this code! Credit is not necessary, but always appreciated!
-
-    You can find more information about shaders in Optfine here:
-    https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt
-
-*/
-//Declare GL version.
 #version 120
+
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+
+#ifdef GLSLANG
+#extension GL_GOOGLE_include_directive : enable
+#endif
 
 //Model * view matrix and it's inverse.
 uniform mat4 gbufferModelView;
@@ -18,6 +13,12 @@ uniform mat4 gbufferModelViewInverse;
 //Pass vertex information to fragment shader.
 varying vec4 color;
 varying vec2 coord0;
+
+uniform int frameCounter;
+
+uniform float viewWidth, viewHeight;
+
+#include "bsl_lib/util/jitter.glsl"
 
 void main()
 {
@@ -33,4 +34,6 @@ void main()
     color = gl_Color;
     //Output diffuse texture coordinates to fragment shader.
     coord0 = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+
+    gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 }

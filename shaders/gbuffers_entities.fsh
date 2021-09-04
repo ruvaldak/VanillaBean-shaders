@@ -1,30 +1,37 @@
 #version 120
 
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
-
 //0-1 amount of blindness.
 uniform float blindness;
 //0 = default, 1 = water, 2 = lava.
 uniform int isEyeInWater;
 
-//Vertex color.
+uniform vec4 entityColor;
+
+uniform sampler2D lightmap;
+uniform sampler2D texture;
+
+varying vec2 lmcoord;
+varying vec2 texcoord;
 varying vec4 color;
+//coord0
+
+//varying vec2 coord0;
+//svarying vec2 coord1;
 
 const int GL_LINEAR = 9729;
 const int GL_EXP = 2048;
 uniform int fogMode;
 
-varying vec2 texcoord;
+void main() {
+	//vec4 col = texture2D(texture, texcoord) * color;
+	//col *= texture2D(lightmap, lmcoord);
+	vec3 light = (1.-blindness) * texture2D(lightmap,lmcoord).rgb;
+	vec4 col = color * vec4(light,1) * texture2D(texture,texcoord);
+	col.rgb = mix(col.rgb,entityColor.rgb,entityColor.a);
 
-void main()
-{
-    //if(texcoord.x < 1 / viewWidth && texcoord.y < 1 / viewHeight) discard;
-
-    vec4 col = color;
+	//vec3 col = color.rgb;
 
     //Calculate fog intensity in or out of water.
-    //vec4 fog = vec4(1);
-    //fog.a = gl_Fog.scale;
     vec4 fog;
     if(fogMode == GL_EXP)
         fog.a = 1.-exp(-gl_FogFragCoord * gl_Fog.density);
@@ -34,11 +41,11 @@ void main()
         fog.a = 1.-exp(-gl_FogFragCoord * gl_Fog.density);
     fog.rgb = gl_Fog.color.rgb;
 
-    //Apply the fog.
+    //fog = 1.0-fog;
+
     col.rgb = mix(col.rgb, fog.rgb, fog.a);
 
-    //Output the result.
-    /*DRAWBUFFERS:03*/
-    gl_FragData[0] = col * vec4(vec3(1.-blindness),1);
-    gl_FragData[1] = fog;
+/* DRAWBUFFERS:0 */
+	gl_FragData[0] = col; //gcolor
+	//gl_FragData[1] = fog;
 }

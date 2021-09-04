@@ -1,15 +1,6 @@
-/*
-    XorDev's "Default Shaderpack"
-
-    This was put together by @XorDev to make it easier for anyone to make their own shaderpacks in Minecraft (Optifine).
-    You can do whatever you want with this code! Credit is not necessary, but always appreciated!
-
-    You can find more information about shaders in Optfine here:
-    https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt
-
-*/
-//Declare GL version.
 #version 120
+
+// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
 //Diffuse (color) texture.
 uniform sampler2D texture;
@@ -23,14 +14,24 @@ uniform float blindness;
 //0 = default, 1 = water, 2 = lava.
 uniform int isEyeInWater;
 
+uniform float viewWidth;
+uniform float viewHeight;
+
 //Vertex color.
 varying vec4 color;
 //Diffuse and lightmap texture coordinates.
 varying vec2 coord0;
 varying vec2 coord1;
+//varying vec2 texcoord;
+
+const int GL_LINEAR = 9729;
+const int GL_EXP = 2048;
+uniform int fogMode;
 
 void main()
 {
+    //if(coord0.x < 1 / viewWidth && coord0.y < 1 / viewHeight) discard;
+
     //Combine lightmap with blindness.
     vec3 light = (1.-blindness) * texture2D(lightmap,coord1).rgb;
     //Sample texture times lighting.
@@ -39,11 +40,26 @@ void main()
     col.rgb = mix(col.rgb,entityColor.rgb,entityColor.a);
 
     //Calculate fog intensity in or out of water.
-    float fog = clamp((gl_FogFragCoord-gl_Fog.start) * gl_Fog.scale, 0., 1.);
+    vec4 fog;
+    //fog = vec4(1);
+    //fog.a = gl_Fog.scale;
+    if(fogMode == GL_EXP)
+        fog.a = 1.-exp(-gl_FogFragCoord * gl_Fog.density);
+    else if (fogMode == GL_LINEAR)
+        fog.a = clamp((gl_FogFragCoord-gl_Fog.start) * gl_Fog.scale, 0., 1.);
+    else if (isEyeInWater == 1.0 || isEyeInWater == 2.0)
+        fog.a = 1.-exp(-gl_FogFragCoord * gl_Fog.density);
+
+    //float fog = clamp((gl_FogFragCoord-gl_Fog.start) * gl_Fog.scale, 0., 1.);
+    fog.rgb = gl_Fog.color.rgb;
+
+
+    //fog = 1.0-fog;
 
     //Apply the fog.
-    col.rgb = mix(col.rgb, gl_Fog.color.rgb, fog);
-
+	col.rgb = mix(col.rgb, fog.rgb, fog.a);
     //Output the result.
+    /*DRAWBUFFERS:03*/
     gl_FragData[0] = col;
+    gl_FragData[1] = fog;
 }

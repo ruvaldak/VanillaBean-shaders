@@ -1,6 +1,7 @@
-# XorDevs Default Shaderpack
-Minecraft's default shaders, recreated for Optifine. I put this together so that it is easier for others to make their own shaderpacks from this starting point.
+# VanillAA
+This shaderpack is near-identical to vanilla rendering, except for supporting TAA. It's compatible with OptiFine and Iris.
 
-You can do whatever you want with this code! Credit is not necessary, but it's always appreciated!
-You can find more information about shaders in Optfine here:
-https://github.com/sp614x/optifine/blob/master/OptiFineDoc/doc/shaders.txt
+## Credits
+* Vanilla rendering recreation from [XorDevs-Default-Shaderpack](https://github.com/XorDev/XorDevs-Default-Shaderpack)
+* TAA implementation from [BSL](https://bitslablab.com/bslshaders/)
+* FidelityFX CAS from [AMD](https://github.com/GPUOpen-Effects/FidelityFX-CAS), fragment shader version from [vkBasalt](https://github.com/DadSchoorse/vkBasalt)
