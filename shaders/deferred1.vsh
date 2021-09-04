@@ -5,11 +5,17 @@
 
 varying vec2 texCoord;
 
-//#include "lib/composite.glsl"
+uniform int frameCounter;
+
+uniform float viewWidth, viewHeight;
+
+#include "bsl_lib/util/jitter.glsl"
 
 void main()
 {
     gl_Position = ftransform();
 
     texCoord = gl_MultiTexCoord0.xy;
+
+    //gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 }
