@@ -1,5 +1,5 @@
 # VanillA9
-This shaderpack is near-identical to vanilla rendering, except for supporting TAA and SSAO. It's compatible with OptiFine, as well as Iris 1.1.2 and later.
+This shaderpack is near-identical to vanilla rendering, except for supporting TAA and replacing Vanilla AO with SSAO. It's compatible with OptiFine, as well as Iris 1.1.2 and later.
 
 ## Credits
 * Vanilla rendering recreation from [XorDevs-Default-Shaderpack](https://github.com/XorDev/XorDevs-Default-Shaderpack)
