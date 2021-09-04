@@ -21,7 +21,7 @@ uniform float viewHeight;
 #include "settings.glsl"
 
 //blur radius
-const float radius = 2;
+//const float radius = 2;
 
 vec2 hash2(vec2 p) {
     return normalize(fract(cos(p*mat2(195,174,286,183))*742.)-.5);
@@ -46,7 +46,7 @@ void main()
 	float total = 0.;
 
 	//First sample offset scale
-	float scale = radius/sqrt(AO_BLUR_SAMPLES);
+	float scale = AO_BLUR_RADIUS/sqrt(AO_BLUR_SAMPLES);
 	//Pseudo-random sample direction
 	vec2 point = hash2(texCoord)*scale;
 	//Try without noise here:

@@ -15,5 +15,5 @@ void main() {
     color = gl_Color;
 	texCoord = gl_MultiTexCoord0.xy;
 
-	gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
+	//gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 }
