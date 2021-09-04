@@ -3,7 +3,6 @@ This shaderpack is near-identical to vanilla rendering, except for supporting TA
 
 ## Credits
 * Vanilla rendering recreation from [XorDevs-Default-Shaderpack](https://github.com/XorDev/XorDevs-Default-Shaderpack)
-* TAA implementation from [BSL](https://bitslablab.com/bslshaders/)
+* TAA and SSAO implementation from [BSL](https://bitslablab.com/bslshaders/)
 * FidelityFX CAS from [AMD](https://github.com/GPUOpen-Effects/FidelityFX-CAS), fragment shader version from [vkBasalt](https://github.com/DadSchoorse/vkBasalt)
-* SSAO implementation from [BSL](https://bitslablab.com/bslshaders/)
 * Assistance figuring things out from [gri573](https://github.com/gri573) and [XorDev](https://github.com/XorDev)
