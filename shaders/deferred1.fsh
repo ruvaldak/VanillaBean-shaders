@@ -20,9 +20,6 @@ uniform float viewHeight;
 
 #include "settings.glsl"
 
-//Number of texture samples. Higher = smoother, slower
-#define SAMPLES 32.
-
 //blur radius
 const float radius = 2;
 
@@ -49,7 +46,7 @@ void main()
 	float total = 0.;
 
 	//First sample offset scale
-	float scale = radius/sqrt(SAMPLES);
+	float scale = radius/sqrt(AO_BLUR_SAMPLES);
 	//Pseudo-random sample direction
 	vec2 point = hash2(texCoord)*scale;
 	//Try without noise here:
@@ -61,7 +58,7 @@ void main()
 	mat2 ang = mat2(.73736882209777832,-.67549037933349609,.67549037933349609,.73736882209777832);
 
 	//Look through all the samples
-	for(float i = 0.;i<SAMPLES;i++)
+	for(float i = 0.;i<AO_BLUR_SAMPLES;i++)
 	{
 		//Rotate point direction
 		point *= ang;
