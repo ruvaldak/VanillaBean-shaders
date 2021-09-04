@@ -100,9 +100,8 @@ uniform int fogMode;
         int samples = AOSamples;
 
         float dither_base = dither;
-        dither *= 6.283185307;
-
         dither = fract(dither + frameTimeCounter * 8.0);
+        dither *= 6.283185307;
 
         float inv_steps = 1.0 / samples;
         float sample_angle_increment = 6.283185307 * inv_steps;
@@ -121,10 +120,14 @@ uniform int fogMode;
         //vec2 scale = 0.6 * vec2(1.0/aspectRatio,1.0) * gbufferProjection[1][1] / (2.74747742 * max(far*d,6.0));
         float sample_d;
 
+        vec2 ang = vec2(cos(dither), sin(dither));
+        mat2 rotate = mat2(.73736882209777832,-.67549037933349609,.67549037933349609,.73736882209777832);
+
         for (int i = 1; i <= samples; i++) {
             dither += sample_angle_increment;
             current_radius = (i + dither_base) * inv_steps;
-            offset = vec2(cos(dither), sin(dither)) * scale * current_radius;
+            ang *= rotate;
+            offset = ang * scale * current_radius;
 
             sd = ld(texture2D(depth, texCoord.xy + offset).r);
             sample_d = (d - sd) * far_double * hand_check;
@@ -142,45 +145,13 @@ uniform int fogMode;
 
         return (ao * AOAmount) + (1.0 - AOAmount);
     }
-
-    float GetLinearDepth(float depth) {
-        return (2.0 * near) / (far + near - depth * (far - near));
-    }
-
-    vec2 OffsetDist(float x) {
-        float n = fract(x * 8.0) * 3.1415;
-        return vec2(cos(n), sin(n)) * x;
-    }
-
-    float doAO(float z) {
-        float ao = 0.0;
-        float tw = 0.0;
-        float lz = ld(z);
-
-        for(int i = 0; i < 4; i++){
-            vec2 offset = aoOffsets[i] / vec2(viewWidth, viewHeight);
-            float samplez = ld(texture2D(depthtex0, texCoord + offset * 3.0).r);
-            float wg = max(1.0 - 2.0 * far * abs(lz - samplez), 0.00001);
-            ao += texture2DLod(colortex5, texCoord + offset * 2.0, 1.0).r * wg;
-            tw += wg;
-        }
-        ao /= tw;
-        if(tw < 0.0001) ao = texture2DLod(colortex5, texCoord, 2.0).r;
-        //if(sin(frameTimeCounter*2.0)+0.5>texCoord.x) ao = 1.0;
-
-        //return pow(texture2DLod(colortex5, texCoord, 2.0).r, AOAmount);
-        return pow(ao, AOAmount);
-    }
 #endif
 
 void main(){
-	//vec4 color = texture2D(colortex0,texCoord.xy);
 	vec4 col = color;
-
+    float ao = 0.0;
 
 	#ifdef SSAO
-        //vec3 ao = col.rgb;
-
         vec4 fog = texture2D(colortex3, texCoord);
 		float z = texture2D(depthtex0,texCoord.xy).r;
 
@@ -188,14 +159,10 @@ void main(){
 		float dither = shifted_eclectic_dither(gl_FragCoord.xy);
 		float dither2 = bayer64(gl_FragCoord.xy);
 
-		//col.rgb = mix(col.rgb, fog.rgb, fog.a);
-		float ao = mix(dbao(depthtex0, dither), 1.0, fog.a);
-		//col.rgb *= mix(dbao(depthtex0, dither), 1.0, fog.a);
-		//col.rgb = mix(col.rgb, fog.rgb, fog.a);
+		ao = mix(dbao(depthtex0, dither), 1.0, fog.a);
 	#endif
 
 	/* DRAWBUFFERS:05 */
-
 	gl_FragData[0] = col * texture2D(colortex0,texCoord.xy);
 	gl_FragData[1] = vec4(ao, 0.0, 0.0, 0.0);
 }
