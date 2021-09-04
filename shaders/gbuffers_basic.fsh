@@ -18,24 +18,10 @@ varying vec2 texcoord;
 
 void main()
 {
-    //if(texcoord.x < 1 / viewWidth && texcoord.y < 1 / viewHeight) discard;
-
     vec4 col = color;
 
-    //Calculate fog intensity in or out of water.
-    //vec4 fog = vec4(1);
-    //fog.a = gl_Fog.scale;
-    vec4 fog;
-    if(fogMode == GL_EXP)
-        fog.a = 1.-exp(-gl_FogFragCoord * gl_Fog.density);
-    else if (fogMode == GL_LINEAR)
-        fog.a = clamp((gl_FogFragCoord-gl_Fog.start) * gl_Fog.scale, 0., 1.);
-    else if (isEyeInWater == 1.0 || isEyeInWater == 2.0)
-        fog.a = 1.-exp(-gl_FogFragCoord * gl_Fog.density);
-    fog.rgb = gl_Fog.color.rgb;
-
-    //Apply the fog.
-    col.rgb = mix(col.rgb, fog.rgb, fog.a);
+	//Apply fog
+	#include "/lib/fog.glsl"
 
     //Output the result.
     /*DRAWBUFFERS:03*/
