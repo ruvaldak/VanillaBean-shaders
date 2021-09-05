@@ -160,11 +160,8 @@ void main(){
 		float dither2 = bayer64(gl_FragCoord.xy);
 
 		ao = mix(dbao(depthtex0, dither), 1.0, fog.a*2);
-		/* DRAWBUFFERS:05 */
-        gl_FragData[0] = col * texture2D(colortex0,texCoord.xy);
-        gl_FragData[1] = vec4(ao, 0.0, 0.0, 0.0);
-	#else
-        /* DRAWBUFFERS:0 */
-        gl_FragData[0] = col * texture2D(colortex0,texCoord.xy);
     #endif
+    /* DRAWBUFFERS:05 */
+    gl_FragData[0] = col * texture2D(colortex0,texCoord.xy);
+    gl_FragData[1] = vec4(ao, 0.0, 0.0, 0.0);
 }
