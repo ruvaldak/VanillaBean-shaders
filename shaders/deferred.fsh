@@ -54,8 +54,10 @@ uniform int fogMode;
     );
 #endif
 
-#ifdef SSAO
-	const float ambientOcclusionLevel = 0.0;
+#if (defined SSAO && AO_TYPE==1)
+    const float ambientOcclusionLevel = 0.0;
+#elif (defined SSAO && AO_TYPE==2)
+    const float ambientOcclusionLevel = 0.7;
 #endif
 
 #ifdef SSAO
@@ -94,7 +96,7 @@ uniform int fogMode;
         return fract((0.8 * fmod(frameCounter, 5.0)) + p4 + (((mod(9.0 * frag.x + 16.0 * frag.y, 21.0)) + 0.5) * 0.047619047619047616));
     }
 
-	float dbao(sampler2D depth, float dither) {
+	float bslao(sampler2D depth, float dither) {
         float ao = 0.0;
 
         int samples = AOSamples;
@@ -145,6 +147,51 @@ uniform int fogMode;
 
         return (ao * AOAmount) + (1.0 - AOAmount);
     }
+
+    float compao(sampler2D depth, vec2 coord, float dither) {
+        float ao = 0.0;
+        int samples = AOSamples;
+
+        coord *= 1.0;
+        coord += 0.5 / vec2(viewWidth, viewHeight);
+
+        if (coord.x < 0.0 || coord.x > 1.0 || coord.y < 0.0 || coord.y > 1.0) return 1.0;
+
+        dither = fract(frameTimeCounter * 4.0 + dither);
+
+        float d = texture2D(depth, coord).r;
+        if(d >= 1.0) return 1.0;
+        float hand = float(d < 0.56);
+        d = ld(d);
+
+        float sampleDepth = 0.0, angle = 0.0, dist = 0.0;
+        float fovScale = gbufferProjection[1][1] / 1.37;
+        float distScale = max((far - near) * d + near, 6.0);
+        vec2 scale = 0.35 * vec2(1.0 / aspectRatio, 1.0) * fovScale / distScale;
+        scale *= vec2(0.5, 1.0);
+
+        for(int i = 1; i <= samples; i++) {
+            vec2 offset = offsetDist(i + dither, samples) * scale;
+
+            sampleDepth = ld(texture2D(depth, coord + offset).r);
+            float aosample = (far - near) * (d - sampleDepth) * 2.0;
+            if (hand > 0.5) aosample *= 1024.0;
+            angle = clamp(0.5 - aosample, 0.0, 1.0);
+            dist = clamp(0.5 * aosample - 1.0, 0.0, 1.0);
+
+            sampleDepth = ld(texture2D(depth, coord - offset).r);
+            aosample = (far - near) * (d - sampleDepth) * 2.0;
+            if (hand > 0.5) aosample *= 1024.0;
+            angle += clamp(0.5 - aosample, 0.0, 1.0);
+            dist += clamp(0.5 * aosample - 1.0, 0.0, 1.0);
+
+            ao += clamp(angle + dist, 0.0, 1.0);
+        }
+        ao /= samples;
+
+        //return ao;
+        return (ao * AOAmount) + (1.0 - AOAmount);
+    }
 #endif
 
 void main(){
@@ -159,7 +206,10 @@ void main(){
 		float dither = shifted_eclectic_dither(gl_FragCoord.xy);
 		float dither2 = bayer64(gl_FragCoord.xy);
 
-		ao = mix(dbao(depthtex0, dither), 1.0, fog.a*2);
+        if(AO_TYPE == 1)
+            ao = mix(bslao(depthtex0, dither), 1.0, fog.a*2);
+        else if(AO_TYPE == 2)
+            ao = mix(compao(depthtex0, texCoord, dither), 1.0, fog.a*2);
     #endif
     /* DRAWBUFFERS:05 */
     gl_FragData[0] = col * texture2D(colortex0,texCoord.xy);
