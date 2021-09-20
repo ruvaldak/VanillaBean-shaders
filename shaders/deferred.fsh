@@ -57,7 +57,7 @@ uniform int fogMode;
 #if (defined SSAO && AO_TYPE==1)
     const float ambientOcclusionLevel = 0.0;
 #elif (defined SSAO && AO_TYPE==2)
-    const float ambientOcclusionLevel = 0.7;
+    const float ambientOcclusionLevel = 0.5;
 #endif
 
 #ifdef SSAO
