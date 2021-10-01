@@ -1,8 +1,6 @@
 # VanillaBean
 This shaderpack is near-identical to vanilla rendering, except for supporting TAA and replacing Vanilla AO with SSAO. It's compatible with OptiFine, as well as Iris 1.1.2 and later.
 
-Current performance hit on my system: about 24% of FPS lost versus no shaders at all
-
 ## Credits
 * VanillAA, giving me a great place to start from, by [leo60228](https://github.com/leo60228/VanillAA-Shaders) 
 * Vanilla rendering recreation from [XorDevs-Default-Shaderpack](https://github.com/XorDev/XorDevs-Default-Shaderpack)
