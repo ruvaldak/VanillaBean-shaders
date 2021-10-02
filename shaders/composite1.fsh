@@ -12,6 +12,7 @@ uniform sampler2D texture;
 uniform sampler2D colortex1;
 uniform sampler2D colortex2;
 uniform sampler2D depthtex0;
+uniform sampler2D depthtex1;
 
 uniform float viewWidth, viewHeight, aspectRatio;
 

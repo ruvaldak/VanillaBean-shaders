@@ -23,7 +23,7 @@ void main()
 {
     vec4 col = color;
     float temporalData = 0.0;
-    vec3 temporalColor = texture2D(colortex2, texCoord).gba;
+    vec3 temporalColor = texture2D(colortex2, coord0).gba;
 
     /*vec3 fogColor = col.rgb;
 	float fogScale = texture2D(colortex3, coord0).a;
