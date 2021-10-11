@@ -42,10 +42,7 @@ void main()
     normal = (mc_Entity==1.) ? vec3(0,1,0) : (gbufferModelViewInverse * vec4(normal,0)).xyz;
 
     //Calculate simple lighting. Note: This as close as I (XorDev) could get, but it's not perfect!
-    float light = 1.0;
-	#ifndef CLASSIC_LIGHTING
-		light = .8-.25*abs(normal.x*.9+normal.z*.3)+normal.y*.2;
-	#endif
+    float light = .8-.25*abs(normal.x*.8+normal.z*.0)+normal.y*.2;
 
     //Output color with lighting to fragment shader.
     color = vec4(gl_Color.rgb * light, gl_Color.a);

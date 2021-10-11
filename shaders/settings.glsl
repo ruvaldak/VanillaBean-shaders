@@ -11,8 +11,6 @@
 #define AO_BLUR_CLARITY 2.2 //[0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0]
 #define AO_BLUR_WEIGHT 0.0
 
-//#define CLASSIC_LIGHTING
-
 //#define COLOR_FILTER
 #define COLOR_FILTER_RED 1.3
 #define COLOR_FILTER_GREEN 1.2
