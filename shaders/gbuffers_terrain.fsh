@@ -10,11 +10,13 @@ varying vec4 color;
 uniform sampler2D texture;
 
 void main() {
-	vec4 albedo = texture2D(texture, texcoord);
+	vec4 albedo = texture2D(texture, texcoord) * color;
+	vec4 light = vec4(texture2D(lightmap,lmcoord).rgb, 1.0f);
+	albedo *= light;
 
-	/* DRAWBUFFERS:0123 */
+	/* DRAWBUFFERS:012 */
 	gl_FragData[0] = albedo;
 	gl_FragData[1] = vec4(normal, 1.0f);
-	gl_FragData[2] = vec4(texture2D(lightmap,lmcoord).rgb, 1.0f);
-	gl_FragData[3] = color;
+	//gl_FragData[2] = vec4(texture2D(lightmap,lmcoord).rgb, 1.0f);
+	//gl_FragData[3] = color;
 }
