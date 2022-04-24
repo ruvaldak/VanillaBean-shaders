@@ -103,9 +103,10 @@ void main()
     SharpenFilter(color, coord0);
 
     #ifdef COLOR_FILTER
-        color.r = (color.r * COLOR_FILTER_RED)+(color.b+color.g) * (-0.1);
+        /*color.r = (color.r * COLOR_FILTER_RED)+(color.b+color.g) * (-0.1);
         color.g = (color.g * COLOR_FILTER_GREEN)+(color.r+color.b) * (-0.1);
-        color.b = (color.b * COLOR_FILTER_BLUE)+(color.r+color.g) * (-0.1);
+        color.b = (color.b * COLOR_FILTER_BLUE)+(color.r+color.g) * (-0.1);*/
+        color = (color * vec3(COLOR_FILTER_RED, COLOR_FILTER_GREEN, COLOR_FILTER_BLUE)) - 0.1 * (color.brr + color.gbg);
         color = color / (color + 2.2) * 3.0;
     #endif
 

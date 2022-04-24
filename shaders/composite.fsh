@@ -26,6 +26,7 @@ uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelViewInverse;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
+uniform vec3 cameraPosition;
 
 const bool colortex2Clear = false;
 
@@ -41,6 +42,13 @@ const int totalSamples = shadowSamplesPerSize * shadowSamplesPerSize;
 #ifdef SHADOW_FILTER
 #endif
 
+vec3 eyeCameraPosition = cameraPosition + gbufferModelViewInverse[3].xyz;
+
+vec3 projectAndDivide(mat4 projectionMatrix, vec3 position) {
+	vec4 homogeneousPos = projectionMatrix * vec4(position, 1.0f);
+	return homogeneousPos.xyz / homogeneousPos.w;
+}
+
 float Visibility(in sampler2D shadowMap, in vec3 sampleCoords) {
 	return step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowMap, sampleCoords.xy).r);
 }
@@ -54,11 +62,17 @@ vec3 TransparentShadow(in vec3 sampleCoords) {
 }
 
 vec3 GetShadow(float depth) {
-	vec3 clipSpace = vec3(texcoord, depth) * 2.0f - 1.0f;
+	/*vec3 clipSpace = vec3(texcoord, depth) * 2.0f - 1.0f;
 	vec4 viewW = gbufferProjectionInverse * vec4(clipSpace, 1.0f);
 	vec3 view = viewW.xyz / viewW.w;
-	vec4 world = gbufferModelViewInverse * vec4(view, 1.0f);
-	vec4 shadowSpace = shadowProjection * shadowModelView * world;
+	vec4 world = gbufferModelViewInverse * vec4(view, 1.0f);*/
+	vec3 screenPos = vec3(texcoord, texture2D(depthtex0, texcoord));
+	vec3 ndcPos = screenPos * 2.0f - 1.0f;
+	vec3 viewPos = projectAndDivide(gbufferProjectionInverse, ndcPos);
+	vec3 feetPlayerPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
+	vec3 shadowViewPos = (shadowModelView * vec4(feetPlayerPos, 1.0f)).xyz;
+	vec4 shadowSpace = shadowProjection * vec4(shadowViewPos, 1.0f);
+	//vec4 shadowSpace = shadowProjection * shadowModelView * world;
 	shadowSpace.xy = DistortPosition(shadowSpace.xy);
 	vec3 sampleCoords = shadowSpace.xyz * 0.5f + 0.5f;
 	#if defined SHADOWS && defined SHADOW_FILTER
