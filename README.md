@@ -1,8 +1,8 @@
-# Really like my work?
-Why not donate to me through my [Patreon](https://www.patreon.com/ruvaldak)? Whether a one time donation, or a recurring payment, it's all welcome! My work takes a fair amount of time and effort, and any donations really help, be it with groceries, bills, gas, or whatever else I may need.
-
 # VanillaBean
 This shaderpack is near-identical to vanilla rendering, except for supporting TAA and replacing Vanilla AO with SSAO. It's compatible with OptiFine, as well as Iris 1.1.2 and later.
+
+## Really like my work?
+Why not donate to me through my [Patreon](https://www.patreon.com/ruvaldak)? Whether a one time donation, or a recurring payment, it's all welcome! My work takes a fair amount of time and effort, and any donations really help, be it with groceries, bills, gas, or whatever else I may need.
 
 ## Credits
 * VanillAA, giving me a great place to start from, by [leo60228](https://github.com/leo60228/VanillAA-Shaders) 
