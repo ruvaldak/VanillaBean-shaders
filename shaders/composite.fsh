@@ -1,6 +1,7 @@
 #version 120
 
 varying vec2 texcoord;
+varying vec4 color;
 
 // Direction of the sun (not normalized!)
 uniform vec3 sunPosition;
@@ -10,6 +11,7 @@ uniform vec3 sunPosition;
 // color textures:
 uniform sampler2D colortex0; // buffer 0 (albedo)
 uniform sampler2D colortex1; // buffer 1 (normal vector, mc_entity attribute (float))
+uniform sampler2D colortex2;
 
 // depth texture
 uniform sampler2D depthtex0; // depth buffer 0
@@ -24,6 +26,8 @@ uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelViewInverse;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
+
+const bool colortex2Clear = false;
 
 float Ambient = 0.1f;
 
@@ -85,23 +89,34 @@ vec3 GetShadow(float depth) {
 }
 
 void main() {
-	vec3 albedo = texture2D(colortex0, texcoord).rgb;
+	vec4 albedo = texture2D(colortex0, texcoord);
 	vec3 normal = texture2D(colortex1, texcoord).rgb;
 	float depth = texture2D(depthtex0, texcoord).r;
     if(depth == 1.0f){
-        gl_FragData[0] = vec4(albedo, 1.0f);
+        gl_FragData[0] = albedo;
         return;
     }
+
+    //albedo *= color.rgb;
+
 
 	//float NdotL = max(dot(normal, normalize(sunPosition)), 0.0f);
 	//Ambient = 1.0f;
 
 	//do lighting. albedo = block color. multiply by modifiers.
 	//vec3 diffuse = albedo * (lightmapColor + NdotL + Ambient);
-	vec3 diffuse = albedo;
+	vec4 diffuse = albedo;
 	#ifdef SHADOWS
-		diffuse *= ((GetShadow(depth) * 0.5f + 0.5f));
+		diffuse *= vec4(GetShadow(depth) * 0.5f + 0.5f, 1.0f);
 	#endif
-	/* DRAWBUFFERS:0 */
-	gl_FragData[0] = vec4(diffuse, 1.0f);
+
+	float temporalData = 0.0;
+    vec3 temporalColor = texture2D(colortex2, texcoord).gba;
+
+    //gl_FragData[0] = col * texture2D(colortex0,coord0);
+    
+	/* DRAWBUFFERS:12 */
+	gl_FragData[0] = diffuse;
+	gl_FragData[1] = vec4(temporalData,temporalColor);
+	//gl_FragData[2] = vec4(GetShadow(depth) * 0.5f + 0.5f, 1.0f);
 }

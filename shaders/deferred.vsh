@@ -1,19 +1,19 @@
 #version 120
 
-varying vec2 texcoord;
 varying vec4 color;
+varying vec2 texCoord;
 
-uniform float frameTimeCounter;
+uniform int frameCounter;
 
 uniform float viewWidth, viewHeight;
 
-//#include "/bsl_lib/util/jitter.glsl"
+#include "bsl_lib/util/jitter.glsl"
 
 void main() {
 	gl_Position = ftransform();
-	texcoord = gl_MultiTexCoord0.st;
 
-	color = gl_Color;
+    color = gl_Color;
+	texCoord = gl_MultiTexCoord0.xy;
 
 	//gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 }

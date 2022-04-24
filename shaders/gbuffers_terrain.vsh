@@ -11,6 +11,13 @@ varying vec4 color;
 
 varying float isFlat;
 
+uniform int frameCounter;
+uniform float frameTimeCounter;
+
+uniform float viewWidth, viewHeight;
+
+#include "/bsl_lib/util/jitter.glsl"
+
 void main() {
 	gl_Position = ftransform();
 	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
@@ -24,4 +31,6 @@ void main() {
     float light = .8-.25*abs(normal.x*.8+normal.z*.0)+normal.y*.2;
 	
 	color = vec4(gl_Color.rgb * light, gl_Color.a);
+
+	gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 }
