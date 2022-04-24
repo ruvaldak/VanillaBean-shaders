@@ -11,3 +11,4 @@ Why not donate to me through my [Patreon](https://www.patreon.com/ruvaldak)? Whe
 * SSAO from [BSL](https://bitslablab.com/bslshaders/) and [Complementary](https://www.curseforge.com/minecraft/customization/complementary-shaders)
 * FidelityFX CAS from [AMD](https://github.com/GPUOpen-Effects/FidelityFX-CAS), fragment shader version from [vkBasalt](https://github.com/DadSchoorse/vkBasalt)
 * Assistance figuring things out from [gri573](https://github.com/gri573) and [XorDev](https://github.com/XorDev)
+* Shadax-stack [shader tutorial](https://github.com/Shadax-stack/MinecraftShaders)
