@@ -5,8 +5,10 @@ uniform mat4 gbufferProjectionInverse;
 varying vec2 texCoord;
 
 uniform sampler2D colortex0;
+uniform sampler2D colortex4;
 uniform sampler2D colortex5;
 uniform sampler2D depthtex0;
+uniform sampler2D noisetex;
 uniform float viewWidth;
 uniform float viewHeight;
 
@@ -18,6 +20,8 @@ vec2 hash2(vec2 p) {
 
 void main()
 {
+	vec3 albedo = texture2D(colortex0, texCoord).rgb;
+
     #ifdef SSAO
     //Notes for shadertoy stuff:
     //uv = texCoord
@@ -43,10 +47,40 @@ void main()
         }
     }
     col = col1 / weight;
+    albedo = albedo * col;
+    #endif
+
+    /*
+    #ifdef BLUR_GLASS
+	float entity = (texture2D(colortex4, texCoord).r)*255.0f;
+
+	if(entity == 2.) {
+		float pi = 6.28318530718f;
+		float directions = 16.0f;
+		float quality = 4.0f;
+		float size = 16.0f;
+
+		vec2 radius = size/vec2(viewWidth, viewHeight);
+
+		float randomAngle = texture2D(noisetex, texCoord * 20.0f).r * 100.0f;
+		float cosTheta = cos(randomAngle);
+		float sinTheta = sin(randomAngle);
+		mat2 rotation = mat2(cosTheta, -sinTheta, sinTheta, cosTheta);
+		for( float d=0.0; d<pi; d+=pi/directions)
+    	{
+			for(float i=1.0/quality; i<=1.0; i+=1.0/quality)
+        	{
+				albedo += texture2D(colortex0, texCoord+(rotation * vec2(cos(d),sin(d))*radius*i)).rgb;
+        	}
+    	}
+
+    	albedo /= quality * directions - 15.0;
+	}
+	#endif
+	*/
 
     /*DRAWBUFFERS:0*/
-    gl_FragData[0] = vec4(texture2D(colortex0, texCoord).rgb * col,1.0);
-    #endif
+    gl_FragData[0] = vec4(albedo,1.0);
 }
 
 

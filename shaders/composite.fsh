@@ -10,8 +10,9 @@ uniform vec3 sunPosition;
 
 // color textures:
 uniform sampler2D colortex0; // buffer 0 (albedo)
-uniform sampler2D colortex1; // buffer 1 (normal vector, mc_entity attribute (float))
+uniform sampler2D colortex1; // buffer 1 (normal vector)
 uniform sampler2D colortex2;
+uniform sampler2D colortex4; // colortex4.r is 1 if glass, 0 if not
 
 // depth texture
 uniform sampler2D depthtex0; // depth buffer 0
@@ -27,6 +28,8 @@ uniform mat4 gbufferModelViewInverse;
 uniform mat4 shadowModelView;
 uniform mat4 shadowProjection;
 uniform vec3 cameraPosition;
+
+uniform float viewWidth, viewHeight;
 
 const bool colortex2Clear = false;
 
@@ -66,7 +69,8 @@ vec3 GetShadow(float depth) {
 	vec4 viewW = gbufferProjectionInverse * vec4(clipSpace, 1.0f);
 	vec3 view = viewW.xyz / viewW.w;
 	vec4 world = gbufferModelViewInverse * vec4(view, 1.0f);*/
-	vec3 screenPos = vec3(texcoord, texture2D(depthtex0, texcoord));
+	//vec3 screenPos = vec3(texcoord, texture2D(depthtex0, texcoord));
+	vec3 screenPos = vec3(texcoord, depth);
 	vec3 ndcPos = screenPos * 2.0f - 1.0f;
 	vec3 viewPos = projectAndDivide(gbufferProjectionInverse, ndcPos);
 	vec3 feetPlayerPos = (gbufferModelViewInverse * vec4(viewPos, 1.0)).xyz;
@@ -90,8 +94,10 @@ vec3 GetShadow(float depth) {
 				#else
 					shadowAccum += vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, currentSampleCoordinate.xy).r));
 				#endif
+				//sampleCoords += SHADOW_BIAS;
 			}
 		}
+
 		shadowAccum /= totalSamples;
 		return shadowAccum;
 	#else
@@ -119,7 +125,37 @@ void main() {
 
 	//do lighting. albedo = block color. multiply by modifiers.
 	//vec3 diffuse = albedo * (lightmapColor + NdotL + Ambient);
+	
+	float entity = (texture2D(colortex4, texcoord).r)*255.0f;
+
+	/*
+	#ifdef BLUR_GLASS
+	if(entity == 2.) {
+		float pi = 6.28318530718f;
+		float directions = 16.0f;
+		float quality = 4.0f;
+		float size = 8.0f;
+
+		vec2 radius = size/vec2(viewWidth, viewHeight);
+
+		float randomAngle = texture2D(noisetex, texcoord * 20.0f).r * 100.0f;
+		float cosTheta = cos(randomAngle);
+		float sinTheta = sin(randomAngle);
+		mat2 rotation = mat2(cosTheta, -sinTheta, sinTheta, cosTheta);
+		for( float d=0.0; d<pi; d+=pi/directions)
+    	{
+			for(float i=1.0/quality; i<=1.0; i+=1.0/quality)
+        	{
+				albedo += texture2D(colortex0, texcoord+(rotation * vec2(cos(d),sin(d))*radius*i));
+        	}
+    	}
+
+    	albedo /= quality * directions - 15.0;
+	}
+	#endif
+	*/
 	vec4 diffuse = albedo;
+
 	#ifdef SHADOWS
 		diffuse *= vec4(GetShadow(depth) * 0.5f + 0.5f, 1.0f);
 	#endif
