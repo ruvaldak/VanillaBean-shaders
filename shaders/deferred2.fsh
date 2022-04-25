@@ -158,7 +158,7 @@ void main() {
 	if(entity != 2.)
 		diffuse *= vec4(GetShadow(depth) * 0.5f + 0.5f, 1.0f);
 	else
-		diffuse = albedo;
+		diffuse = texture2D(colortex0, texcoord);
 	#endif
 
 	float temporalData = 0.0;

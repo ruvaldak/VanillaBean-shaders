@@ -2,6 +2,8 @@
 
 #include "lib/distort.glsl"
 
+attribute vec4 mc_Entity;
+
 varying vec2 texcoord;
 varying vec4 color;
 
