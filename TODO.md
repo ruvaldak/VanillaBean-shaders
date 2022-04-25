@@ -1,5 +1,4 @@
 # TODO:
-* fix shadow flickering with TAA
 * implement fog in composite
     * Refer to abandoned VanillaBean2 for new style
     * Ability to entirely adjust fog in settings.
