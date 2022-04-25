@@ -52,15 +52,20 @@ vec3 projectAndDivide(mat4 projectionMatrix, vec3 position) {
 }
 
 float Visibility(in sampler2D shadowMap, in vec3 sampleCoords) {
-	return step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowMap, sampleCoords.xy).r);
+	if ((texture2D(shadowtex0, sampleCoords.xy).r != texture2D(shadowtex1, sampleCoords.xy).r))
+		return step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowMap, sampleCoords.xy).r);
+	else
+		return 1.0f;
+	//return step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowMap, sampleCoords.xy).r);
 }
 
 vec3 TransparentShadow(in vec3 sampleCoords) {
 	float shadowVisibility0 = Visibility(shadowtex0, sampleCoords);
 	float shadowVisibility1 = Visibility(shadowtex1, sampleCoords);
 	vec4 shadowColor0 = texture2D(shadowcolor0, sampleCoords.xy);
-	vec3 transmittedColor = shadowColor0.rgb * (1.0f - shadowColor0.a);
-	return mix(transmittedColor * shadowVisibility1, vec3(1.0f), shadowVisibility0);
+	vec3 transmittedColor = shadowColor0.rgb - (0.0f + shadowColor0.a);
+	//vec3 transmittedColor = shadowColor0.rgb / (0.0f * shadowColor0.a);
+	return mix((transmittedColor*1) * shadowVisibility1, vec3(1.0f), shadowVisibility0);
 }
 
 vec3 GetShadow(float depth) {
@@ -70,7 +75,7 @@ vec3 GetShadow(float depth) {
 	vec4 world = gbufferModelViewInverse * vec4(view, 1.0f);*/
 	//vec3 screenPos = vec3(texcoord, texture2D(depthtex0, texcoord));
 	float entity = (texture2D(colortex4, texcoord).r)*255.0f;
-	if(entity == 2.) {
+	//if(entity == 2.) {
 	vec3 screenPos = vec3(texcoord, depth);
 	vec3 ndcPos = screenPos * 2.0f - 1.0f;
 	vec3 viewPos = projectAndDivide(gbufferProjectionInverse, ndcPos);
@@ -93,7 +98,11 @@ vec3 GetShadow(float depth) {
 				#ifdef COLORED_SHADOWS
 					shadowAccum += TransparentShadow(currentSampleCoordinate);
 				#else
-					shadowAccum += vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, currentSampleCoordinate.xy).r));
+					//shadowAccum += vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, currentSampleCoordinate.xy)));
+					if ((texture2D(shadowtex0, currentSampleCoordinate.xy).r != texture2D(shadowtex1, currentSampleCoordinate.xy).r))
+						shadowAccum += vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, currentSampleCoordinate.xy)));
+					else
+						shadowAccum += vec3(1.0f);
 				#endif
 				//sampleCoords += SHADOW_BIAS;
 			}
@@ -105,11 +114,12 @@ vec3 GetShadow(float depth) {
 		#ifdef COLORED_SHADOWS
 			return TransparentShadow(sampleCoords);
 		#endif
-		return vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, sampleCoords.xy).r));
+		if ((texture2D(shadowtex0, sampleCoords.xy).r != texture2D(shadowtex1, sampleCoords.xy).r))
+			return vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, sampleCoords.xy).r));
+		else
+			return vec3(1.0f);
 	#endif
-	}
-	else
-		return vec3(1.0f);
+	//}
 }
 
 void main() {
@@ -161,7 +171,7 @@ void main() {
 	vec4 diffuse = albedo;
 
 	#ifdef SHADOWS
-		//diffuse *= vec4(GetShadow(depth) * 0.5f + 0.5f, 1.0f);
+		diffuse *= vec4(GetShadow(depth) * 0.5f + 0.5f, 1.0f);
 	#endif
 
 	float temporalData = 0.0;

@@ -70,8 +70,6 @@ vec3 GetShadow(float depth) {
 	vec3 view = viewW.xyz / viewW.w;
 	vec4 world = gbufferModelViewInverse * vec4(view, 1.0f);*/
 	//vec3 screenPos = vec3(texcoord, texture2D(depthtex0, texcoord));
-	float entity = (texture2D(colortex4, texcoord).r)*255.0f;
-	if(entity != 2.) {
 	vec3 screenPos = vec3(texcoord, depth);
 	vec3 ndcPos = screenPos * 2.0f - 1.0f;
 	vec3 viewPos = projectAndDivide(gbufferProjectionInverse, ndcPos);
@@ -91,19 +89,15 @@ vec3 GetShadow(float depth) {
 			for(int y = -SHADOW_SAMPLES; y <= SHADOW_SAMPLES; y++) {
 				vec2 offset = rotation * vec2(x, y);
 				vec3 currentSampleCoordinate = vec3(sampleCoords.xy + offset, sampleCoords.z);
-				shadowAccum += vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, currentSampleCoordinate.xy).r));
+				shadowAccum += vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex1, currentSampleCoordinate.xy).r));
 				//sampleCoords += SHADOW_BIAS;
 			}
 		}
-
 		shadowAccum /= totalSamples;
 		return shadowAccum;
 	#else
-		return vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, sampleCoords.xy).r));
+		return vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex1, sampleCoords.xy).r));
 	#endif
-	}
-	else
-		return vec3(0.0f);
 }
 
 void main() {
