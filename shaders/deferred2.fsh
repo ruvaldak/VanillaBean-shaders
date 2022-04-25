@@ -10,6 +10,7 @@ uniform vec3 sunPosition;
 
 // color textures:
 uniform sampler2D colortex0; // buffer 0 (albedo)
+uniform sampler2D colortex1; // buffer 1 (normal vector)
 uniform sampler2D colortex2;
 uniform sampler2D colortex4; // colortex4.r is 1 if glass, 0 if not
 
@@ -70,7 +71,7 @@ vec3 GetShadow(float depth) {
 	vec4 world = gbufferModelViewInverse * vec4(view, 1.0f);*/
 	//vec3 screenPos = vec3(texcoord, texture2D(depthtex0, texcoord));
 	float entity = (texture2D(colortex4, texcoord).r)*255.0f;
-	if(entity == 2.) {
+	if(entity != 2.) {
 	vec3 screenPos = vec3(texcoord, depth);
 	vec3 ndcPos = screenPos * 2.0f - 1.0f;
 	vec3 viewPos = projectAndDivide(gbufferProjectionInverse, ndcPos);
@@ -90,11 +91,7 @@ vec3 GetShadow(float depth) {
 			for(int y = -SHADOW_SAMPLES; y <= SHADOW_SAMPLES; y++) {
 				vec2 offset = rotation * vec2(x, y);
 				vec3 currentSampleCoordinate = vec3(sampleCoords.xy + offset, sampleCoords.z);
-				#ifdef COLORED_SHADOWS
-					shadowAccum += TransparentShadow(currentSampleCoordinate);
-				#else
-					shadowAccum += vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, currentSampleCoordinate.xy).r));
-				#endif
+				shadowAccum += vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, currentSampleCoordinate.xy).r));
 				//sampleCoords += SHADOW_BIAS;
 			}
 		}
@@ -102,14 +99,11 @@ vec3 GetShadow(float depth) {
 		shadowAccum /= totalSamples;
 		return shadowAccum;
 	#else
-		#ifdef COLORED_SHADOWS
-			return TransparentShadow(sampleCoords);
-		#endif
 		return vec3(step(sampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, sampleCoords.xy).r));
 	#endif
 	}
 	else
-		return vec3(1.0f);
+		return vec3(0.0f);
 }
 
 void main() {
@@ -161,7 +155,10 @@ void main() {
 	vec4 diffuse = albedo;
 
 	#ifdef SHADOWS
-		//diffuse *= vec4(GetShadow(depth) * 0.5f + 0.5f, 1.0f);
+	if(entity != 2.)
+		diffuse *= vec4(GetShadow(depth) * 0.5f + 0.5f, 1.0f);
+	else
+		diffuse = albedo;
 	#endif
 
 	float temporalData = 0.0;
@@ -169,8 +166,8 @@ void main() {
 
     //gl_FragData[0] = col * texture2D(colortex0,coord0);
     
-	/* DRAWBUFFERS:12 */
+	/* DRAWBUFFERS:0 */
 	gl_FragData[0] = diffuse;
-	gl_FragData[1] = vec4(temporalData,temporalColor);
+	//gl_FragData[1] = vec4(temporalData,temporalColor);
 	//gl_FragData[2] = vec4(GetShadow(depth) * 0.5f + 0.5f, 1.0f);
 }
