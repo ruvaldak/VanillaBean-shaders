@@ -32,9 +32,10 @@ void main() {
     vec4 fog;
     doFog(color, fog);
 
-/* DRAWBUFFERS:0368 */
-	gl_FragData[0] = color; //gcolor
-	gl_FragData[1] = fog;
-	gl_FragData[2] = vec4(entity/255, 0.0f,vec2(1.0f));
-	gl_FragData[3] = vec4(bufferNormal, 1.0f);
+/* DRAWBUFFERS:068 */
+	//gl_FragData[0] = color; //gcolor
+	gl_FragData[0] = color;
+	//gl_FragData[1] = fog;
+	gl_FragData[1] = vec4(entity/255, color.a,vec2(1.0f));
+	gl_FragData[2] = vec4(bufferNormal, 1.0f);
 }

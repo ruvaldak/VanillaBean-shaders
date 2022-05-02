@@ -1,217 +1,206 @@
 #version 120
 
-//CODE BY BSL CAPT TATSU
-
-#include "settings.glsl"
-
 uniform sampler2D colortex0;
 uniform sampler2D colortex3;
 uniform sampler2D colortex5;
-varying vec4 color;
-varying vec2 texCoord;
+uniform sampler2D colortex8; // normal buffer;
+uniform sampler2D noisetex;
+uniform sampler2D depthtex0;
+
+uniform mat4 gbufferProjectionInverse;
+uniform mat4 gbufferModelViewInverse;
+uniform float viewWidth;
+uniform float viewHeight;
+uniform float frameTimeCounter;
 uniform int frameCounter;
 
-const int GL_LINEAR = 9729;
-const int GL_EXP = 2048;
-uniform int fogMode;
+uniform vec3 cameraPosition;
 
-#ifdef SSAO
-	uniform int isEyeInWater;
-	uniform int worldTime;
+varying vec2 texcoord;
+varying vec4 glcolor;
 
-	uniform float aspectRatio;
-	uniform float blindness;
-	uniform float far;
-	uniform float frameTimeCounter;
-	uniform float near;
-	uniform float nightVision;
-	uniform float rainStrength;
-	uniform float shadowFade;
-	uniform float timeAngle;
-	uniform float timeBrightness;
-	uniform float viewWidth;
-	uniform float viewHeight;
+#include "settings.glsl"
 
-	uniform ivec2 eyeBrightnessSmooth;
+const float noiseTextureResolution = 128.0f;
 
-	uniform vec3 cameraPosition;
+vec3 eyeCameraPosition = cameraPosition + gbufferModelViewInverse[3].xyz;
+float randomSize = 64.0f; 
 
-	uniform mat4 gbufferProjectionInverse;
-	uniform mat4 gbufferModelViewInverse;
-	uniform mat4 gbufferProjection;
-	uniform mat4 gbufferModelView;
+float random() {
+    return fract(sin(dot(texture2D(noisetex, texcoord).xy, vec2(12.9898, 78.233))) * 43758.5453);
+}
+
+vec3 projectAndDivide(mat4 projectionMatrix, vec3 position) {
+	vec4 homogeneousPos = projectionMatrix * vec4(position, 1.0f);
+	return homogeneousPos.xyz/homogeneousPos.w;
+}
+
+vec2 offsetDist(float x, int s){
+	float n = fract(x*1.414)*3.1415;
+	return vec2(cos(n),sin(n))*x/s;
+}
+
+float fmod(float x, float y) {
+    return x-y*floor(x/y);
+}
+
+float shifted_eclectic_dither(vec2 frag) {
+    vec3 p3 = fract(vec3(frag.xyx) * .1031);
+    p3 += dot(p3, p3.yzx + 33.33);
+    float p4 = fract((p3.x + p3.y) * p3.z) * 0.1;
+
+    // return ((mod(9.0 * frag.x + 16.0 * frag.y, 21.0)) + 0.5) * 0.047619047619047616;
+    return fract((0.8 * fmod(frameCounter, 5.0)) + p4 + (((mod(9.0 * frag.x + 16.0 * frag.y, 21.0)) + 0.5) * 0.047619047619047616));
+}
+
+vec3 getPosition(in vec2 uv) {
+	vec3 screenPos = vec3(uv, texture2D(depthtex0, uv));
+	vec3 ndcPos = screenPos * 2.0f - 1.0f;
+	vec3 viewPos = projectAndDivide(gbufferProjectionInverse, ndcPos);
+	vec3 eyePlayerPos = mat3(gbufferModelViewInverse) * viewPos;
+	vec3 worldPos = eyePlayerPos + eyeCameraPosition;
+	vec3 feetPlayerPos = worldPos - cameraPosition;
+	return viewPos;
+}
+
+vec3 getNormal(in vec2 uv) {
+	return normalize(texture2D(colortex8, uv).xyz * 2.0f - 1.0f);
+}
+
+vec2 getRandom(in vec2 uv) {
+	return normalize(texture2D(noisetex, uv * vec2(viewWidth, viewHeight) / noiseTextureResolution).xy * 2.0f - 1.0f);
+}
+
+float doAmbientOcclusion(in vec2 tcoord, in vec2 uv, in vec3 p, in vec3 cnorm) {
+	vec3 diff = getPosition(tcoord + uv) - p;
+	vec3 v = normalize(diff);
+	float d = length(diff)*AO_SCALE;
+	return max(0.0f,dot(cnorm,v)-AO_BIAS)*(1.0f/(1.0f+d))*AO_INTENSITY;
+}
 
 
-	uniform sampler2D colortex1;
-	uniform sampler2D depthtex0;
-	uniform sampler2D noisetex;
+void main() {
+	vec3 color = texture2D(colortex0, texcoord).rgb;
+	vec4 col = glcolor;
 
-	vec2 aoOffsets[4] = vec2[4](
-        vec2( 1.0,  0.0),
-        vec2( 0.0,  1.0),
-        vec2(-1.0,  0.0),
-        vec2( 0.0, -1.0)
-    );
-#endif
+	float ao = 0.0f;
+	vec4 fog = texture2D(colortex3, texcoord);
 
-#if (defined SSAO && AO_TYPE==1)
-    const float ambientOcclusionLevel = 0.0;
-#elif (defined SSAO && AO_TYPE==2)
-    const float ambientOcclusionLevel = 0.5;
-#endif
+	//aoScale = 0.5f, aoBias = 0.0f, aoIntensity = 1.0f, aoSampleRadius = 0.15f;
 
-#ifdef SSAO
-	float ld(float depth) {
-		return (2.0 * near) / (far + near - depth * (far - near));
-	}
-
-	float bayer2(vec2 a){
-		a = floor(a);
-		return fract( dot(a, vec2(.5, a.y * .75)) );
-	}
-
-	#define bayer4(a)   (bayer2( .5*(a))*.25+bayer2(a))
-	#define bayer8(a)   (bayer4( .5*(a))*.25+bayer2(a))
-	#define bayer16(a)  (bayer8( .5*(a))*.25+bayer2(a))
-	#define bayer32(a)  (bayer16(.5*(a))*.25+bayer2(a))
-	#define bayer64(a)  (bayer32(.5*(a))*.25+bayer2(a))
-	#define bayer128(a) (bayer64(.5*(a))*.25+bayer2(a))
-	#define bayer256(a) (bayer128(.5*(a))*.25+bayer2(a))
-
-	vec2 offsetDist(float x, int s){
-		float n = fract(x*1.414)*3.1415;
-		return vec2(cos(n),sin(n))*x/s;
-	}
-
-	float fmod(float x, float y) {
-        return x-y*floor(x/y);
-	}
-
-    float shifted_eclectic_dither(vec2 frag) {
-        vec3 p3 = fract(vec3(frag.xyx) * .1031);
-        p3 += dot(p3, p3.yzx + 33.33);
-        float p4 = fract((p3.x + p3.y) * p3.z) * 0.1;
-
-        // return ((mod(9.0 * frag.x + 16.0 * frag.y, 21.0)) + 0.5) * 0.047619047619047616;
-        return fract((0.8 * fmod(frameCounter, 5.0)) + p4 + (((mod(9.0 * frag.x + 16.0 * frag.y, 21.0)) + 0.5) * 0.047619047619047616));
-    }
-
-	float bslao(sampler2D depth, float dither) {
-        float ao = 0.0;
-
-        int samples = AOSamples;
-
-        float dither_base = dither;
-        dither = fract(dither + frameTimeCounter * 8.0);
-        dither *= 6.283185307;
-
-        float inv_steps = 1.0 / samples;
-        float sample_angle_increment = 6.283185307 * inv_steps;
-        float current_radius;
-        vec2 offset;
-
-        float d = texture2D(depth, texCoord.xy).r;
-        float hand_check = d < 0.56 ? 1024.0 : 1.0;
-        d = ld(d);
-
-        float sd = 0.0;
-        float angle = 0.0;
-        float dist = 0.0;
-        float far_double = 2.0 * far;
-        vec2 scale = vec2(1.0 / aspectRatio, 1.0) * (1.0 / atan(1.0 / gbufferProjection[1][1]) * 0.5 / (d * far));
-        //vec2 scale = 0.6 * vec2(1.0/aspectRatio,1.0) * gbufferProjection[1][1] / (2.74747742 * max(far*d,6.0));
-        float sample_d;
-
-        vec2 ang = vec2(cos(dither), sin(dither));
-        mat2 rotate = mat2(.73736882209777832,-.67549037933349609,.67549037933349609,.73736882209777832);
-
-        for (int i = 1; i <= samples; i++) {
-            dither += sample_angle_increment;
-            current_radius = (i + dither_base) * inv_steps;
-            ang *= rotate;
-            offset = ang * scale * current_radius;
-
-            sd = ld(texture2D(depth, texCoord.xy + offset).r);
-            sample_d = (d - sd) * far_double * hand_check;
-            angle = clamp(0.5 - sample_d, 0.0, 1.0);
-            dist = clamp(0.25 * sample_d - 1.0, 0.0, 1.0);
-
-            sd = ld(texture2D(depth, texCoord.xy - offset).r);
-            sample_d = (d - sd) * far_double * hand_check;
-            angle += clamp(0.5 - sample_d, 0.0, 1.0);
-            dist += clamp(0.25 * sample_d - 1.0, 0.0, 1.0);
-
-            ao += clamp(angle + dist, 0.0, 1.0);
-        }
-        ao /= samples;
-
-        return (ao * AOAmount) + (1.0 - AOAmount);
-    }
-
-    float compao(sampler2D depth, vec2 coord, float dither) {
-        float ao = 0.0;
-        int samples = AOSamples;
-
-        coord *= 1.0;
-        coord += 0.5 / vec2(viewWidth, viewHeight);
-
-        if (coord.x < 0.0 || coord.x > 1.0 || coord.y < 0.0 || coord.y > 1.0) return 1.0;
-
-        dither = fract(frameTimeCounter * 4.0 + dither);
-
-        float d = texture2D(depth, coord).r;
-        if(d >= 1.0) return 1.0;
-        float hand = float(d < 0.56);
-        d = ld(d);
-
-        float sampleDepth = 0.0, angle = 0.0, dist = 0.0;
-        float fovScale = gbufferProjection[1][1] / 1.37;
-        float distScale = max((far - near) * d + near, 6.0);
-        vec2 scale = 0.35 * vec2(1.0 / aspectRatio, 1.0) * fovScale / distScale;
-        scale *= vec2(0.5, 1.0);
-
-        for(int i = 1; i <= samples; i++) {
-            vec2 offset = offsetDist(i + dither, samples) * scale;
-
-            sampleDepth = ld(texture2D(depth, coord + offset).r);
-            float aosample = (far - near) * (d - sampleDepth) * 2.0;
-            if (hand > 0.5) aosample *= 1024.0;
-            angle = clamp(0.5 - aosample, 0.0, 1.0);
-            dist = clamp(0.5 * aosample - 1.0, 0.0, 1.0);
-
-            sampleDepth = ld(texture2D(depth, coord - offset).r);
-            aosample = (far - near) * (d - sampleDepth) * 2.0;
-            if (hand > 0.5) aosample *= 1024.0;
-            angle += clamp(0.5 - aosample, 0.0, 1.0);
-            dist += clamp(0.5 * aosample - 1.0, 0.0, 1.0);
-
-            ao += clamp(angle + dist, 0.0, 1.0);
-        }
-        ao /= samples;
-
-        //return ao;
-        return (ao * AOAmount) + (1.0 - AOAmount);
-    }
-#endif
-
-void main(){
-	vec4 col = color;
-    float ao = 0.0;
+	float dither = shifted_eclectic_dither(gl_FragCoord.xy);
+	dither = fract(frameTimeCounter * 4.0 + dither);
 
 	#ifdef SSAO
-        vec4 fog = texture2D(colortex3, texCoord);
-		float z = texture2D(depthtex0,texCoord.xy).r;
+		vec3 p = getPosition(texcoord); 
+		vec3 n = getNormal(texcoord); 
+		vec2 rand = getRandom(texcoord); 
+		float rad = AO_SAMPLE_RADIUS/p.z; 
 
-		//Dither
-		float dither = shifted_eclectic_dither(gl_FragCoord.xy);
-		float dither2 = bayer64(gl_FragCoord.xy);
+		/*const int multiple = 4;
+		const int count = 2;
+		const int iterations = int(pow(multiple,count)); */
+		
+		/*vec2 vec[iterations];
 
-        if(AO_TYPE == 1)
-            ao = mix(bslao(depthtex0, dither), 1.0, fog.a*2);
-        else if(AO_TYPE == 2)
-            ao = mix(compao(depthtex0, texCoord, dither), 1.0, fog.a*2);
+		for(int i = 0; i < iterations; i++) {
+			float val = (i/multiple)+1;
+			val*=multiple;
+			val = val/iterations;
+
+			if(i%2==0) {
+				vec[i].x = val;
+				vec[++i].y = val;
+				vec[++i].x = 0-val;
+				vec[++i].y = 0-val;
+			}
+		}*/
+		/*vec[0] = vec2(1.0f,0.0f);
+		vec[1] = vec2(-1.0f,0.0f);
+		vec[2] = vec2(0.0f,1.0f);
+		vec[3] = vec2(0.0f,-1.0f);*/
+
+		
+		const float wtf = sqrt(0.5f);
+
+		float randomNum1 = texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution).x;
+		float randomNum2 = texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution).y;
+		//float randomNum1 = texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution).x;
+		//float randomNum1 = texture2D(noisetex, texcoord).r;
+		//float randomNum1 = 0.5;
+		//float randomNum1 = random();
+		//float randomNum1 = fract(sin(dot(texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution).xy, vec2(12.9898, 78.233))) * 43758.5453);
+
+		for (int j = 0; j < AO_SAMPLES; ++j) 
+		{
+			//randomNum1 = texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution).x;
+			float angle = 2.4 * j + 2*PI*randomNum2;
+			//float angle = 2.4 * j;
+			vec2 coord1 = vec2(cos(angle), sin(angle));
+			//randomNum1 = random(coord1);
+			coord1 *= sqrt((j+randomNum1)/AO_SAMPLES)*rad;
+			//coord1 = coord1 * rad;
+			//vec2 coord1 = reflect(vec[j],rand)*rad; 
+			
+			vec2 coord2 = vec2(coord1.x*wtf - coord1.y*wtf, coord1.x*wtf + coord1.y*wtf); 
+
+			//ao += doAmbientOcclusion(texcoord,coord1*random(texcoord), p, n);
+			//ao += doAmbientOcclusion(texcoord,coord2*random(texcoord), p, n);
+			for(int i = 0; i < AO_RADIUS_SAMPLES; i++) {
+				float mult = 0.0f;
+				mult = (i+1.0f)/AO_RADIUS_SAMPLES;
+				if(i%2==0)
+					ao += doAmbientOcclusion(texcoord,coord1*mult, p, n); 
+				else
+					ao += doAmbientOcclusion(texcoord,coord2*mult, p, n); 
+			}
+			/*ao += doAmbientOcclusion(texcoord,coord1*0.25f, p, n); 
+			ao += doAmbientOcclusion(texcoord,coord2*0.5f, p, n); 
+			ao += doAmbientOcclusion(texcoord,coord1*0.75f, p, n); 
+			ao += doAmbientOcclusion(texcoord,coord2, p, n); */
+		}
+
+		for (int j = 0; j < AO_SAMPLES; ++j) 
+		{
+			//randomNum1 = texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution).x;
+			float angle = 2.4 * j + 2*PI*randomNum2;
+			//float angle = 2.4 * j;
+			vec2 coord1 = vec2(cos(angle), sin(angle));
+			//randomNum1 = random(coord1);
+			coord1 *= sqrt((j+randomNum1)/AO_SAMPLES)*rad;
+			//coord1 = coord1 * rad;
+			//vec2 coord1 = reflect(vec[j],rand)*rad; 
+			vec2 coord2 = vec2(coord1.x*wtf - coord1.y*wtf, coord1.x*wtf + coord1.y*wtf); 
+
+			//ao += doAmbientOcclusion(texcoord,coord1*random(texcoord), p, n);
+			//ao += doAmbientOcclusion(texcoord,coord2*random(texcoord), p, n);
+			for(int i = 0; i < AO_RADIUS_SAMPLES; i++) {
+				float mult = 0.0f;
+				mult = (i+1.0f)/AO_RADIUS_SAMPLES;
+				if(i%2==0)
+					ao += doAmbientOcclusion(texcoord,coord1*mult, p, n); 
+				else
+					ao += doAmbientOcclusion(texcoord,coord2*mult, p, n); 
+			}
+			/*ao += doAmbientOcclusion(texcoord,coord1*0.25f, p, n); 
+			ao += doAmbientOcclusion(texcoord,coord2*0.5f, p, n); 
+			ao += doAmbientOcclusion(texcoord,coord1*0.75f, p, n); 
+			ao += doAmbientOcclusion(texcoord,coord2, p, n); */
+		}
+
+		ao/=AO_SAMPLES*4.0f; 
+
+		//ao = (1.0f - ao) * 0.5f + 0.5f;
+
+		ao = mix((1.0f - ao) * 0.5f + 0.5f, 1.0, fog.a*2);
+
+		float d = texture2D(depthtex0, texcoord).r;
+    	if(d >= 1.0) ao = 1.0;
     #endif
-    /* DRAWBUFFERS:05 */
-    gl_FragData[0] = col * texture2D(colortex0,texCoord.xy);
-    gl_FragData[1] = vec4(ao, 0.0, 0.0, 0.0);
+	//color *= ao;
+
+	/* DRAWBUFFERS:5 */
+    //gl_FragData[0] = col * texture2D(colortex0,texcoord.xy);
+    gl_FragData[0] = vec4(ao, 0.0, 0.0, 0.0);
+    
 }

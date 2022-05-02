@@ -13,17 +13,19 @@ uniform vec3 cameraPosition;
 
 varying vec2 lmcoord;
 varying vec2 texcoord;
-varying vec3 bufferNormal;
 varying vec4 glcolor;
 varying vec4 shadowPos;
+varying vec3 bufferNormal;
+varying float entity;
 
 #include "/distort.glsl"
 
 uniform int frameCounter;
+uniform float frameTimeCounter;
 
 uniform float viewWidth, viewHeight;
 
-#include "bsl_lib/util/jitter.glsl"
+#include "/bsl_lib/util/jitter.glsl"
 
 void main() {
 	//gl_Position = ftransform();
@@ -32,9 +34,14 @@ void main() {
     vec4 viewPos = gl_ModelViewMatrix * gl_Vertex;
 
     //Output position and fog to fragment shader.
-    gl_Position = gl_ProjectionMatrix * viewPos;
-    gl_FogFragCoord = length(vec3(viewPos.xyz));
-    
+    gl_Position = gl_ProjectionMatrix * vec4(viewPos.xyz,1);
+    gl_FogFragCoord = length(viewPos.xyz);
+	
+	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+	lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
+	glcolor = gl_Color;
+	
+    //#ifndef SHADOWS
     //Calculate view space normal.
     vec3 normal = gl_NormalMatrix * gl_Normal;
     bufferNormal = normal;
@@ -45,18 +52,28 @@ void main() {
 
     //Calculate simple lighting. Note: This as close as I (XorDev) could get, but it's not perfect!
     float light = .8-.25*abs(normal.x*.8+normal.z*.0)+normal.y*.2;
+    
+    glcolor = vec4(gl_Color.rgb * light, gl_Color.a);
+
+    entity = mc_Entity;
+    //#else
+    //glcolor = vec4(gl_Color.rgb, gl_Color.a);
+    //float light = 1.0;
+    //#endif
+
 	
-	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-	lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
-	//glcolor = gl_Color;
-	
-	glcolor = vec4(gl_Color.rgb * light, gl_Color.a);
-	
+
 	#ifdef SHADOWS
 	float lightDot = dot(normalize(shadowLightPosition), normalize(gl_NormalMatrix * gl_Normal));
+	#ifdef EXCLUDE_FOLIAGE
+		//when EXCLUDE_FOLIAGE is enabled, act as if foliage is always facing towards the sun.
+		//in other words, don't darken the back side of it unless something else is casting a shadow on it.
+		if (mc_Entity == 1.) lightDot = 1.0;
+	#endif
+
 	if (lightDot > 0.0) { //vertex is facing towards the sun
 		vec4 playerPos = gbufferModelViewInverse * viewPos;
-		shadowPos = shadowProjection * (shadowModelView * playerPos); //convert to shadow space
+		shadowPos = shadowProjection * (shadowModelView * playerPos); //convert to shadow screen space
 		float distortFactor = getDistortFactor(shadowPos.xy);
 		shadowPos.xyz = distort(shadowPos.xyz, distortFactor); //apply shadow distortion
 		shadowPos.xyz = shadowPos.xyz * 0.5 + 0.5; //convert from -1 ~ +1 to 0 ~ 1

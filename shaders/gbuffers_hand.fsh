@@ -31,6 +31,7 @@ void main() {
 	//color *= texture2D(lightmap, lmcoord);
 	
 	
+    
     vec4 color = glcolor * texture2D(texture,texcoord);
     
     

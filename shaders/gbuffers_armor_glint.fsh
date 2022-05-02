@@ -1,26 +1,21 @@
-#version 120 
+#version 120
 
-//Varyings//
-varying vec2 texCoord;
-
-varying vec4 color;
-
-//Uniforms//
+uniform sampler2D lightmap;
 uniform sampler2D texture;
 
-//Program//
+varying vec2 lmcoord;
+varying vec2 texcoord;
+varying vec4 glcolor;
+
+#include "/lib/fog.glsl"
+
 void main() {
-	vec4 col = texture2D(texture, texCoord.xy) * color;
+	vec4 color = texture2D(texture, texcoord) * glcolor;
+	color *= texture2D(lightmap, lmcoord);
 	
-	#if MC_VERSION >= 11500
-		col.rgb = pow(col.rgb,vec3(1.6));
-		col.rgb *= 0.25;
-	#else
-		col.rgb = pow(col.rgb,vec3(2.2));
-	#endif
-	
-	col.rgb *= 10.0;
-	
-    /* DRAWBUFFERS:0 */
-	gl_FragData[0] = col;
+	vec4 fog;
+	doFog(color, fog);
+
+/* DRAWBUFFERS:0 */
+	gl_FragData[0] = color; //gcolor
 }

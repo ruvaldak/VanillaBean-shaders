@@ -1,17 +1,13 @@
-#version 120 
+#version 120
 
-//Varyings//
-varying vec2 texCoord;
-
-varying vec4 color;
-
-//Uniforms//
 uniform sampler2D texture;
 
-//Program//
-void main() {
-	vec4 col = texture2D(texture, texCoord.xy) * color;	
+varying vec2 texcoord;
+varying vec4 glcolor;
 
-    /* DRAWBUFFERS:0 */
-	gl_FragData[0] = col;
+void main() {
+	vec4 color = texture2D(texture, texcoord) * glcolor;
+
+/* DRAWBUFFERS:0 */
+	gl_FragData[0] = color; //gcolor
 }

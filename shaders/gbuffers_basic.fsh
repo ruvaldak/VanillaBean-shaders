@@ -1,30 +1,26 @@
 #version 120
 
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+uniform sampler2D lightmap;
 
 //0-1 amount of blindness.
 uniform float blindness;
-//0 = default, 1 = water, 2 = lava.
-uniform int isEyeInWater;
 
-//Vertex color.
-varying vec4 color;
+varying vec2 lmcoord;
+varying vec4 glcolor;
 
-const int GL_LINEAR = 9729;
-const int GL_EXP = 2048;
-uniform int fogMode;
+#include "/lib/fog.glsl"
 
-varying vec2 texcoord;
-
-void main()
-{
-    vec4 col = color;
-
+void main() {
+    vec4 fog;
+	vec4 color = glcolor;
+	color *= texture2D(lightmap, lmcoord);
+	
 	//Apply fog
-	#include "/lib/fog.glsl"
+	doFog(color, fog);
+	
+	//lolerror
 
-    //Output the result.
-    /*DRAWBUFFERS:03*/
-    gl_FragData[0] = col * vec4(vec3(1.-blindness),1);
-    gl_FragData[1] = fog;
+/* DRAWBUFFERS:03 */
+	gl_FragData[0] = color * vec4(vec3(1.-blindness),1); //gcolor
+	gl_FragData[1] = fog;
 }

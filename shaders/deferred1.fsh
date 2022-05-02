@@ -13,7 +13,9 @@ uniform mat4 gbufferProjectionInverse;
 varying vec2 texCoord;
 
 uniform sampler2D colortex0;
+uniform sampler2D colortex4; //textured_lit rgb, alpha set to 0
 uniform sampler2D colortex5;
+uniform sampler2D colortex6; //r = mc_Entity, g = textured_lit alpha
 uniform sampler2D depthtex0;
 uniform float viewWidth;
 uniform float viewHeight;
@@ -29,6 +31,7 @@ vec2 hash2(vec2 p) {
 
 void main()
 {
+	float col = 1.0f;
     #ifdef SSAO
     //Notes for shadertoy stuff:
     //uv = texCoord
@@ -41,12 +44,14 @@ void main()
     //fast simple small bilateral blur by gri573
     int size = AO_BLUR_SIZE;
     float clarity = AO_BLUR_CLARITY;
-    float col = texture2D(colortex5, texCoord).r;
-    float weight = AO_BLUR_WEIGHT;
+    col = texture2D(colortex5, texCoord).r;
+    float weight = texture2D(depthtex0, texCoord).r;
+    //float weight = 0.0;
 
+    #ifdef SSAO_FILTER
     float col1 = 0.0;
-    for(int i = 0; i < size; i++) {
-        for(int j = 0; j < size; j++) {
+    for(int i = -size; i <= size; i++) {
+        for(int j = -size; j <= size; j++) {
             float col0 = texture2D(colortex5, texCoord + (vec2(i, j) - 0.5 * vec2(size)) / vec2(viewWidth, viewHeight)).r;
             float weight0 = max(1.0 - clarity * length(col0 - col), 0.00001);
             col1 += weight0 * col0;
@@ -54,6 +59,27 @@ void main()
         }
     }
     col = col1 / weight;
+    #endif
+
+    /*
+    vec3 shadowAccum = vec3(0.0f);
+		float randomAngle = texture2D(noisetex, texcoord * 20.0f).r * 100.0f;
+		float cosTheta = cos(randomAngle);
+		float sinTheta = sin(randomAngle);
+		mat2 rotation = mat2(cosTheta, -sinTheta, sinTheta, cosTheta) / shadowMapResolution;
+		for(int x = -SHADOW_SAMPLES; x <= SHADOW_SAMPLES; x++) {
+			for(int y = -SHADOW_SAMPLES; y <= SHADOW_SAMPLES; y++) {
+				vec2 offset = rotation * vec2(x, y);
+				vec3 currentSampleCoordinate = vec3(sampleCoords.xy + offset, sampleCoords.z);
+				if ((texture2D(shadowtex0, currentSampleCoordinate.xy).r != texture2D(shadowtex1, currentSampleCoordinate.xy).r))
+					shadowAccum += vec3(step(sampleCoords.z - SHADOW_BIAS,texture2D(shadowtex0, currentSampleCoordinate.xy)));
+				else
+					shadowAccum += vec3(1.0f);
+				//sampleCoords += SHADOW_BIAS;
+			}
+		}
+	*/
+    //vec3 particle = texture2D(colortex4, texCoord).rgb;
 
 
     //1passblur by XorDev
@@ -97,11 +123,17 @@ void main()
 	}
 	//Divide the blur total by the weight total
 	blur /= total;*/
+	#endif
+
+	vec4 particle = vec4(texture2D(colortex4, texCoord).rgb, texture2D(colortex6, texCoord).g);
+	vec4 depth = texture2D(depthtex0, texCoord);
 
     /*DRAWBUFFERS:0*/
     //gl_FragData[0] = vec4(col * blur, 1.0);
     gl_FragData[0] = vec4(texture2D(colortex0, texCoord).rgb * col,1.0);
-    #endif
+    //gl_FragData[0] = vec4((texture2D(colortex0, texCoord).rgb * col)*texture2D(colortex6, texCoord).g,1.0);
+    //gl_FragData[0] = vec4(col, col, col, 1.0f);
+    //gl_FragData[0] = vec4(pow(depth.a, 100.), pow(depth.a, 100.), pow(depth.a, 100.), 1.0f);
 }
 
 

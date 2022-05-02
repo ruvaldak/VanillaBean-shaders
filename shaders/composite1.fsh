@@ -2,38 +2,30 @@
 
 // This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
 
-#extension GL_ARB_shader_texture_lod : enable
+//uniform mat4 gbufferProjectionInverse;
 
-#ifdef GLSLANG
-#extension GL_GOOGLE_include_directive : enable
-#endif
-
-uniform sampler2D texture;
-uniform sampler2D colortex1;
+uniform sampler2D colortex0;
 uniform sampler2D colortex2;
+uniform sampler2D colortex3;
 uniform sampler2D depthtex0;
-uniform sampler2D depthtex1;
+uniform float far;
 
-uniform float viewWidth, viewHeight, aspectRatio;
+#include "settings.glsl"
 
-uniform vec3 cameraPosition, previousCameraPosition;
-
-uniform mat4 gbufferPreviousProjection, gbufferProjectionInverse;
-uniform mat4 gbufferPreviousModelView, gbufferModelViewInverse;
+//varying vec2 texCoord;
 
 varying vec4 color;
-varying vec2 texCoord;
+varying vec2 coord0;
 
-#include "/bsl_lib/antialiasing/taa.glsl"
+const bool colortex2Clear = false;
 
 void main()
 {
-    vec3 color = texture2DLod(colortex1, texCoord, 0.0).rgb;
-    vec4 prev = vec4(texture2DLod(colortex2, texCoord, 0).r, 0.0, 0.0, 0.0);
-
-    prev = TemporalAA(color, prev.r);
+    vec4 col = color;
+    float temporalData = 0.0;
+    vec3 temporalColor = texture2D(colortex2, coord0).gba;
 
     /*DRAWBUFFERS:12*/
-    gl_FragData[0] = vec4(color, 1.0);
-    gl_FragData[1] = vec4(prev);
+    gl_FragData[0] = col * texture2D(colortex0,coord0);
+    gl_FragData[1] = vec4(temporalData,temporalColor);
 }

@@ -11,8 +11,8 @@ uniform vec3 cameraPosition;
 varying vec2 lmcoord;
 varying vec2 texcoord;
 varying vec4 glcolor;
-varying float entity;
 varying vec3 bufferNormal;
+varying float entity;
 
 uniform int frameCounter;
 uniform float frameTimeCounter;

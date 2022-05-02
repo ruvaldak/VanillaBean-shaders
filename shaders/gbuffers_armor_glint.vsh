@@ -1,20 +1,37 @@
-#version 120 
+#version 120
 
-//Varyings//
-varying vec2 texCoord;
+//Get Entity id.
+attribute float mc_Entity;
 
-varying vec4 color;
+//Model * view matrix and it's inverse.
+uniform mat4 gbufferModelView;
+uniform mat4 gbufferModelViewInverse;
 
-//Uniforms//
-uniform int worldTime;
+varying vec2 lmcoord;
+varying vec2 texcoord;
+varying vec4 glcolor;
 
-uniform float frameTimeCounter;
+uniform int frameCounter;
 
-//Program//
-void main(){
-	texCoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+uniform float viewWidth, viewHeight;
+
+#include "bsl_lib/util/jitter.glsl"
+
+void main() {
+	//gl_Position = ftransform();
 	
-	gl_Position = ftransform();
+	//Calculate world space position.
+    vec4 viewPos = gl_ModelViewMatrix * gl_Vertex;
 
-	color = gl_Color;
+    //Output position and fog to fragment shader.
+    gl_Position = gl_ProjectionMatrix * viewPos;
+    gl_FogFragCoord = length(vec3(viewPos.xyz));
+	
+	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
+	lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
+	glcolor = gl_Color;
+	
+	//glcolor = vec4(gl_Color.rgb * light, gl_Color.a);
+	
+	gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 }

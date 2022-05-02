@@ -1,47 +1,44 @@
 #version 120
 
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
+#define DRAW_SHADOW_MAP gcolor //Configures which buffer to draw to the screen [gcolor shadowcolor0 shadowtex0 shadowtex1]
 
-uniform mat4 gbufferProjectionInverse;
-
-uniform sampler2D colortex0;
-uniform sampler2D colortex2;
-uniform sampler2D colortex3;
+uniform float frameTimeCounter;
+uniform sampler2D gcolor;
+uniform sampler2D shadowcolor0;
+uniform sampler2D shadowtex0;
+uniform sampler2D shadowtex1;
 uniform sampler2D depthtex0;
-uniform float far;
+uniform mat4 gbufferProjectionInverse;
+uniform mat4 gbufferModelViewInverse;
+uniform mat4 shadowModelView;
+uniform mat4 shadowProjection;
 
-#include "settings.glsl"
+varying vec2 texcoord;
 
-//varying vec2 texCoord;
+#include "distort.glsl"
 
-varying vec4 color;
-varying vec2 coord0;
+float GetShadow(float depth) {
+    vec3 ClipSpace = vec3(texcoord, depth) * 2.0f - 1.0f;
+    vec4 ViewW = gbufferProjectionInverse * vec4(ClipSpace, 1.0f);
+    vec3 View = ViewW.xyz / ViewW.w;
+    vec4 World = gbufferModelViewInverse * vec4(View, 1.0f);
+    vec4 ShadowSpace = shadowProjection * shadowModelView * World;
+    ShadowSpace.xy = DistortPosition(ShadowSpace.xy);
+    vec3 SampleCoords = ShadowSpace.xyz * 0.5f + 0.5f;
+    return step(SampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, SampleCoords.xy).r);
+}
 
-const bool colortex2Clear = false;
+void main() {
+	vec3 color = texture2D(gcolor, texcoord).rgb;
 
-void main()
-{
-    vec4 col = color;
-    float temporalData = 0.0;
-    vec3 temporalColor = texture2D(colortex2, coord0).gba;
+	float depth = texture2D(depthtex0, texcoord).r;
+    if(depth == 1.0f){
+        gl_FragData[0] = vec4(color, 1.0f);
+        return;
+    }
 
-    /*vec3 fogColor = col.rgb;
-	float fogScale = texture2D(colortex3, coord0).a;
+    vec3 diffuse = color; // * ((GetShadow(depth)*0.5f+0.5f));
 
-	vec3 screenPos = vec3(coord0, texture2D(depthtex0, coord0).r);
-    vec3 clipPos = screenPos * 2.0 - 1.0;
-    vec4 tmp = gbufferProjectionInverse * vec4(clipPos, 1.0);
-    vec3 viewPos = tmp.xyz / tmp.w;
-
-
-
-	//vec4 fog = texture2D(colortex3, texCoord);
-
-	float fog = clamp((((length(viewPos.xyz)*2) / far)-Fog_Start) * fogScale, 0., 1.);
-	fog /= (1-Fog_Start);
-    col.rgb = mix(col.rgb, vec3(1), fog);*/
-
-    /*DRAWBUFFERS:12*/
-    gl_FragData[0] = col * texture2D(colortex0,coord0);
-    gl_FragData[1] = vec4(temporalData,temporalColor);
+/* DRAWBUFFERS:0 */
+	gl_FragData[0] = vec4(diffuse, 1.0f); //gcolor
 }
