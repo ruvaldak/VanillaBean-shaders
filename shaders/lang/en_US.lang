@@ -1,0 +1,16 @@
+option.SHARPENING=Sharpening
+option.AO_TYPE=SSAO Type
+option.AOAmount=SSAO Amount
+option.AOAmount.comment=Determines how strong the AO is.
+option.AOSamples=SSAO Samples
+option.SSAO.comment=Turn on for enhanced ambient occlusion.
+option.AOSamples.comment=Leave this at 20 or 25 for BSL, and 15 or 20 for Comp unless you know what you're doing.
+option.CAS_AMOUNT.comment=Sharpening amount for CAS.
+option.SHARPENING.comment=Sharpening filter.
+value.SHARPENING.0=Off
+value.SHARPENING.1=Unsharp Mask
+value.SHARPENING.2=CAS
+value.AO_TYPE.1=BSL
+value.AO_TYPE.2=Comp
+option.AO_TYPE.comment=Switch between BSL AO and Comp AO. BSL AO completely replaces Vanilla AO, and is subtle with a high radius, though is quite afraid of edges. Comp AO is mixed together with Vanilla AO, though on it's own it has quite a low radius, but sticks much closer to edges than BSL.
+option.CAS_AMOUNT=CAS Amount
