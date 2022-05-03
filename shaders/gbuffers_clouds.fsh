@@ -1,6 +1,7 @@
 #version 120
 
 uniform sampler2D texture;
+uniform sampler2D colortex4;
 
 varying vec2 texcoord;
 varying vec4 glcolor;
@@ -17,25 +18,35 @@ uniform mat4 gbufferModelView;
 uniform mat4 gbufferProjectionInverse;
 uniform vec3 fogColor;
 uniform vec3 skyColor;
+uniform sampler2D noisetex;
+uniform int frameCounter;
 
 const int GL_LINEAR = 9729;
 const int GL_EXP = 2048;
 uniform int fogMode;
 
+const int noiseTextureResolution = 128;
+
+vec4 skyTexture = texture2D(colortex4, texcoord);
+
 void doFog(inout vec4 col, inout vec4 fog) {
     if(fogMode == GL_EXP) //exponential fog
         fog.a = 1.-exp(-gl_FogFragCoord * gl_Fog.density);
     else if (fogMode == GL_LINEAR) //linear fog
-        fog.a = clamp((gl_FogFragCoord-(gl_Fog.start+17.0)) * gl_Fog.scale, 0., 1.);
+        fog.a = clamp((gl_FogFragCoord-(gl_Fog.start+50.0)) * gl_Fog.scale, 0., 1.);
     else if (isEyeInWater == 1.0 || isEyeInWater == 2.0)
         fog.a = 1.-exp(-gl_FogFragCoord * gl_Fog.density); //denser underwater and underlava fog
     
     //fog.rgb = gl_Fog.color.rgb;
     
     vec4 fogpos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight) * 2.0 - 1.0, 1.0, 1.0);
-    fogpos = gbufferProjectionInverse * fogpos;
+    vec4 dither = fract(texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution) + (1.0 / (0.5 + 0.5 * sqrt(5.0))) * (frameCounter & 127));
+    fogpos = (gbufferProjectionInverse * fogpos);
+    fogpos.xy *= dither.xy;
     float upDot = dot(normalize(fogpos.xyz), gbufferModelView[1].xyz);
     fog.rgb = mix(skyColor, fogColor, (0.25 / (max(upDot, 0.0) * max(upDot, 0.0) + 0.25)));
+
+    //fog = mix(fog, vec4(1.0f), skyTexture);
 
     //Apply the fog.
     col.rgb = mix(col.rgb, fog.rgb, fog.a);
@@ -46,7 +57,10 @@ void doFog(inout vec4 col, inout vec4 fog) {
 void main() {
     vec4 fog;
 	vec4 color = texture2D(texture, texcoord) * glcolor;
-	
+    //color *= skyTexture;
+	//vec4 mult = 
+
+    //(skyTexture.r != 0) ? color.r*skyTexture.r
 	//Apply fog
 	//#include "/lib/fog.glsl"
 	doFog(color, fog);

@@ -17,6 +17,7 @@ varying vec4 glcolor;
 varying vec4 shadowPos;
 varying vec3 bufferNormal;
 varying float entity;
+varying float light;
 
 #include "/distort.glsl"
 
@@ -47,11 +48,11 @@ void main() {
     bufferNormal = normal;
     //bufferNormal = mat3(gbufferModelViewInverse) * normal;
     //Use flat for flat "blocks" or world space normal for solid blocks.
-    normal = (mc_Entity==1.) ? vec3(0,1,0) : (gbufferModelViewInverse * vec4(normal,1)).xyz;
+    normal = (mc_Entity==1. || mc_Entity == 2. || mc_Entity == 12.) ? vec3(0,1,0) : (gbufferModelViewInverse * vec4(normal,1)).xyz;
     //bufferNormal = normal;
 
     //Calculate simple lighting. Note: This as close as I (XorDev) could get, but it's not perfect!
-    float light = .8-.25*abs(normal.x*.8+normal.z*.0)+normal.y*.2;
+    light = .8-.25*abs(normal.x*.8+normal.z*.0)+normal.y*.2;
     
     glcolor = vec4(gl_Color.rgb * light, gl_Color.a);
 

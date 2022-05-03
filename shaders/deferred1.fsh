@@ -65,6 +65,7 @@ void main()
 
     /*DRAWBUFFERS:0*/
     gl_FragData[0] = vec4(render, 1.0f);
+    //gl_FragData[0] = 1-texture2D(colortex4, texCoord);
 }
 
 

@@ -3,9 +3,15 @@
 uniform sampler2D colortex0;
 uniform sampler2D colortex3;
 uniform sampler2D colortex5;
+uniform sampler2D colortex6;
 uniform sampler2D colortex8; // normal buffer;
 uniform sampler2D noisetex;
 uniform sampler2D depthtex0;
+
+uniform sampler2D colortex9;
+/*
+const int colortex9Format = R32F;
+*/
 
 uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelViewInverse;
@@ -21,7 +27,22 @@ varying vec4 glcolor;
 
 #include "settings.glsl"
 
-const float noiseTextureResolution = 128.0f;
+const int noiseTextureResolution = 128;
+
+vec2 depth(in vec2 uv) {
+	//vec2 depth = texture2D(depthtex0, uv).xy;
+	//vec2 depth = ((texture2D(colortex9, uv).xy)-1)*-1;
+	vec2 depth = texture2D(colortex9, uv).xy;
+	//(depth-1)*-1
+	
+	/*
+	if(texture2D(depthtex0, uv).r = texture2D(colortex9, uv).r) {
+		depth.r = 1.0f;
+	}
+	*/
+	//return (depth-1)*-1;
+	return depth;
+}
 
 vec3 eyeCameraPosition = cameraPosition + gbufferModelViewInverse[3].xyz;
 float randomSize = 64.0f; 
@@ -40,7 +61,7 @@ vec3 projectAndDivide(mat4 projectionMatrix, vec3 position) {
 }
 
 vec3 getPosition(in vec2 uv) {
-	vec3 screenPos = vec3(uv, texture2D(depthtex0, uv));
+	vec3 screenPos = vec3(uv, depth(uv));
 	vec3 ndcPos = screenPos * 2.0f - 1.0f;
 	vec3 viewPos = projectAndDivide(gbufferProjectionInverse, ndcPos);
 	vec3 eyePlayerPos = mat3(gbufferModelViewInverse) * viewPos;
@@ -125,8 +146,13 @@ void main() {
 
 		ao = mix((1.0f - ao) * 0.5f + 0.5f, 1.0, fog.a*2);
 
-		float d = texture2D(depthtex0, texcoord).r;
+		float d = depth(texcoord).r;
     	if(d >= 1.0) ao = 1.0;
+
+    	float f = texture2D(colortex6, texcoord).r*255;
+    	if(f == 2. || f == 18. || f == 12.) ao = 1.0;
+
+    	//ao += texture2D(colortex9, texcoord).b;
     #endif
 
 	/* DRAWBUFFERS:5 */

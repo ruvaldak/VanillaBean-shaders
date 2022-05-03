@@ -2,6 +2,13 @@
 
 uniform sampler2D texture;
 
+uniform sampler2D colortex9;
+/*
+const int colortex9Format = R32F;
+*/
+
+uniform sampler2D colortex4;
+
 //0-1 amount of blindness.
 uniform float blindness;
 //0 = default, 1 = water, 2 = lava.
@@ -27,7 +34,8 @@ void main() {
 	//Apply fog
 	//#include "/lib/fog.glsl"
 
-/* DRAWBUFFERS:0 */
+/* DRAWBUFFERS:09 */
 	gl_FragData[0] = color; //gcolor
 	//gl_FragData[1] = fog;
+	gl_FragData[1] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
