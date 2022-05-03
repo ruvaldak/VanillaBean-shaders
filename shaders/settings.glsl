@@ -1,11 +1,9 @@
-// This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at https://mozilla.org/MPL/2.0/.
-
 const float PI = 3.1415926535897932384626433832795;
 
 #define SHARPENING 2 // [0 1 2]
-#define CAS_AMOUNT 0.3 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
+#define CAS_AMOUNT 0.5 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 #define SSAO
-#define SSAO_FILTER
+//#define SSAO_FILTER
 
 #define AO_SAMPLE_RADIUS 0.15 //[0.00 0.05 0.10 0.15 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00 2.05 2.10 2.15 2.20 2.25 2.30 2.35 2.40 2.45 2.50 2.55 2.60 2.65 2.70 2.75 2.80 2.85 2.90 2.95 3.00]
 #define AO_INTENSITY 2.00 //[0.00 0.05 0.10 0.15 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00 1.05 1.10 1.15 1.20 1.25 1.30 1.35 1.40 1.45 1.50 1.55 1.60 1.65 1.70 1.75 1.80 1.85 1.90 1.95 2.00 2.05 2.10 2.15 2.20 2.25 2.30 2.35 2.40 2.45 2.50 2.55 2.60 2.65 2.70 2.75 2.80 2.85 2.90 2.95 3.00]
@@ -21,14 +19,14 @@ const float PI = 3.1415926535897932384626433832795;
 #define AO_BLUR_CLARITY 4.4 //[0.2 0.4 0.6 0.8 1.0 1.2 1.4 1.6 1.8 2.0 2.2 2.4 2.6 2.8 3.0 3.2 3.4 3.6 3.8 4.0 4.2 4.4 4.6 4.8 5.0]
 #define AO_BLUR_WEIGHT 0.0
 
-const float sunPathRotation = 30.0; //[0.0 5.0 10.0 15.0 20.0 25.0 30.0 35.0 40.0 45.0]
+const float sunPathRotation = 0.0; //[0.0 5.0 10.0 15.0 20.0 25.0 30.0 35.0 40.0 45.0]
 
-#define SHADOWS
+//#define SHADOWS
 
 #define SHADOW_MAP_RESOLUTION 1024 //[128 256 512 1024 2048 4096 8192]
 const int shadowMapResolution = SHADOW_MAP_RESOLUTION; //Resolution of the shadow map. Higher numbers mean more accurate shadows.
 
-#define AUTO_CALC_SHADOW_BIAS
+//#define AUTO_CALC_SHADOW_BIAS
 
 #ifdef AUTO_CALC_SHADOW_BIAS
 	float SHADOW_BIAS = 4.096*pow(0.5, log2(float(SHADOW_MAP_RESOLUTION)));

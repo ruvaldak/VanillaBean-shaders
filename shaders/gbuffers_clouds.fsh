@@ -50,7 +50,7 @@ void doFog(inout vec4 col, inout vec4 fog) {
     fog.rgb = mix(skyColor, fogColor, (0.25 / (max(upDot, 0.0) * max(upDot, 0.0) + 0.25)));
 
     //fog.a = clamp(max(length(playerPos.xz), abs(playerPos.y)), 0., 1.);
-    fog.rgb += skyTexture.rgb;
+    fog.rgb += (skyTexture.rgb);
     col.rgb = mix(col.rgb, fog.rgb, fog.a);
 }
 
