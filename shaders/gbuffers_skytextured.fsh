@@ -34,8 +34,9 @@ void main() {
 	//Apply fog
 	//#include "/lib/fog.glsl"
 
-/* DRAWBUFFERS:09 */
+/* DRAWBUFFERS:049 */
 	gl_FragData[0] = color; //gcolor
+	gl_FragData[1] = color; //gcolor
 	//gl_FragData[1] = fog;
-	gl_FragData[1] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+	gl_FragData[2] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
