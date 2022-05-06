@@ -48,3 +48,6 @@ const int shadowMapResolution = SHADOW_MAP_RESOLUTION; //Resolution of the shado
 #define COLOR_FILTER_RED 1.3
 #define COLOR_FILTER_GREEN 1.2
 #define COLOR_FILTER_BLUE 1.1
+
+#define FOG_OFFSET_DEFAULT 4.5f
+#define FOG_OFFSET_CLOUDS 50.0f

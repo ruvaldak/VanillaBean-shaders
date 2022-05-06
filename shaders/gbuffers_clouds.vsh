@@ -19,13 +19,14 @@ void main() {
     vec3 modelPos = gl_Vertex.xyz;
     vec3 viewPos = (gl_ModelViewMatrix * vec4(modelPos, 1.0f)).xyz;
     playerPos = (gbufferModelViewInverse * vec4(viewPos, 1.0f)).xyz;
-	
+
 	//Calculate world space position.
     vec3 pos = (gl_ModelViewMatrix * gl_Vertex).xyz;
 
     //Output position and fog to fragment shader.
-    gl_Position = gl_ProjectionMatrix * vec4(pos,1);
-    gl_FogFragCoord = length(pos);
+    gl_Position = gl_ProjectionMatrix * vec4(viewPos,1);
+    //gl_FogFragCoord = length(pos);
+    gl_FogFragCoord = max(length(playerPos.xz), abs(playerPos.y));
 	
 	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 	glcolor = gl_Color;

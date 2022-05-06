@@ -1,5 +1,7 @@
 #version 120
 
+#include "settings.glsl"
+
 uniform sampler2D lightmap;
 
 //0-1 amount of blindness.
@@ -16,7 +18,7 @@ void main() {
 	color *= texture2D(lightmap, lmcoord);
 	
 	//Apply fog
-	doFog(color, fog);
+	doFog(color, fog, FOG_OFFSET_DEFAULT);
 	
 	//lolerror
 

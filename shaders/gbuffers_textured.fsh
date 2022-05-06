@@ -1,5 +1,7 @@
 #version 120
 
+#include "settings.glsl"
+
 uniform sampler2D lightmap;
 uniform sampler2D texture;
 
@@ -35,7 +37,7 @@ void main() {
 	//Apply fog
     //#include "/lib/fog.glsl"
     vec4 fog;
-    doFog(color, fog);
+    doFog(color, fog, FOG_OFFSET_DEFAULT);
 
 /* DRAWBUFFERS:03689 */
 	gl_FragData[0] = color; //gcolor

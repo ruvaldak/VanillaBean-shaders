@@ -36,6 +36,14 @@ vec3 calcSkyColor(vec3 pos) {
 	return mix(skyColor, fogColor, fogify(max(upDot, 0.0), 0.25));
 }
 
+float interleavedGradientNoise(vec2 pos) {
+	return fract(52.9829189 * fract(0.06711056 * pos.x + (0.00583715 * pos.y)));
+}
+
+float interleavedGradientNoise(vec2 pos, int t) {
+	return interleavedGradientNoise(pos + 5.588238 * (t & 127));
+}
+
 void main() {
 	vec4 color = glcolor;
 	//vec4 fog;
@@ -45,12 +53,13 @@ void main() {
 	}
 	else {
 		vec4 pos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight) * 2.0 - 1.0, 1.0, 1.0);
-		vec4 dither = fract(texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution) + (1.0 / (0.5 + 0.5 * sqrt(5.0))) * (frameCounter & 127));
+		//vec4 dither = fract(texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution) + (1.0 / (0.5 + 0.5 * sqrt(5.0))) * (frameCounter & 127));
 		//vec4 dither = texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution);
-		//vec4 dither = interleavedGradientNoise(gl_FragCoord.xy, frameCounter);
+		float dither = interleavedGradientNoise(gl_FragCoord.xy, frameCounter);
 		pos = (gbufferProjectionInverse * pos);
-		pos.xy = pos.xy*dither.xy;
+		//pos.xy = pos.xy*dither.xy;
 		color = vec4(calcSkyColor(normalize(pos.xyz)),1.0);
+		color += dither / 255.0f;
 	}
 
 /* DRAWBUFFERS:09 */
