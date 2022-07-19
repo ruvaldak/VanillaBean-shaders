@@ -8,16 +8,12 @@ attribute vec2 mc_midTexCoord;
 //Model * view matrix and it's inverse.
 uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-uniform vec3 shadowLightPosition;
 uniform vec3 cameraPosition;
 uniform sampler2D texture;
 
 varying vec2 lmcoord;
 varying vec2 texcoord;
 varying vec4 glcolor;
-varying vec4 shadowPos;
 varying vec3 normal;
 varying float entity;
 varying float light;
@@ -57,13 +53,11 @@ void main() {
 	lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
 	glcolor  = gl_Color;
 	
-    //#ifndef SHADOWS
     //Calculate view space normal.
     normal = gl_NormalMatrix * gl_Normal;
-    //bufferNormal = mat3(gbufferModelViewInverse) * normal;
+
     //Use flat for flat "blocks" or world space normal for solid blocks.
     normal = (mc_Entity==1. || mc_Entity == 2. || mc_Entity == 12.) ? vec3(0,1,0) : (gbufferModelViewInverse * vec4(normal,1)).xyz;
-    //bufferNormal = normal;
 
     //Calculate simple lighting. Note: This as close as I (XorDev) could get, but it's not perfect!
     //light = min(normal.x * normal.x * 0.6f + normal.y * normal.y * 0.25f * (3.0f + normal.y) + normal.z * normal.z * 0.8f, 1.0f);

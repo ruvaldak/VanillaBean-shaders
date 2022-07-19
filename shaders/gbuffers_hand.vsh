@@ -6,16 +6,12 @@ attribute float mc_Entity;
 //Model * view matrix and it's inverse.
 uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
-uniform mat4 shadowModelView;
-uniform mat4 shadowProjection;
-uniform vec3 shadowLightPosition;
 uniform vec3 cameraPosition;
 
 varying vec2 lmcoord;
 varying vec2 texcoord;
 varying vec3 bufferNormal;
 varying vec4 glcolor;
-varying vec4 shadowPos;
 
 #include "/distort.glsl"
 
