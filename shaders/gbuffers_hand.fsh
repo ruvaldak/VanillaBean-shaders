@@ -1,6 +1,6 @@
-#version 130
+#version 150 compatibility
 
-#include "settings.glsl"
+#include "/settings.glsl"
 
 uniform vec3 sunPosition;
 

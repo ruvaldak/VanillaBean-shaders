@@ -1,4 +1,4 @@
-#version 130
+#version 150 compatibility
 
 //Get Entity id.
 attribute float mc_Entity;
@@ -17,7 +17,7 @@ uniform int frameCounter;
 
 uniform float viewWidth, viewHeight;
 
-#include "bsl_lib/util/jitter.glsl"
+#include "/bsl_lib/util/jitter.glsl"
 
 void main() {
 	//gl_Position = ftransform();

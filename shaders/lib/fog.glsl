@@ -49,8 +49,6 @@ uniform int fogMode;
 
 const int noiseTextureResolution = 128;
 
-vec4 skyTexture = texture2D(colortex4, gl_FragCoord.xy / vec2(viewWidth, viewHeight));
-
 float interleavedGradientNoise(vec2 pos) {
     return fract(52.9829189 * fract(0.06711056 * pos.x + (0.00583715 * pos.y)));
 }
@@ -60,6 +58,8 @@ float interleavedGradientNoise(vec2 pos, int t) {
 }
 
 void doFog(inout vec4 col, inout vec4 fog, float offset) {
+    vec4 skyTexture = texture2D(colortex4, gl_FragCoord.xy / vec2(viewWidth, viewHeight));
+
     if(fogMode == GL_EXP) //exponential fog
         fog.a = 1.-exp(-gl_FogFragCoord * gl_Fog.density);
     else if (fogMode == GL_LINEAR || isEyeInWater == 1.0 || isEyeInWater == 2.0) //linear fog

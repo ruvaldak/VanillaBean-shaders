@@ -1,6 +1,6 @@
-#version 130
+#version 150 compatibility
 
-#include "settings.glsl"
+#include "/settings.glsl"
 
 uniform sampler2D lightmap;
 uniform sampler2D depthtex0;

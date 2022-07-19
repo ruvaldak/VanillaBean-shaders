@@ -1,4 +1,4 @@
-#version 130
+#version 150 compatibility
 
 //Model * view matrix.
 uniform mat4 gbufferModelView;
@@ -10,7 +10,7 @@ uniform int frameCounter;
 
 uniform float viewWidth, viewHeight;
 
-#include "bsl_lib/util/jitter.glsl"
+#include "/bsl_lib/util/jitter.glsl"
 
 void main() {
 	//Calculate world space position.
