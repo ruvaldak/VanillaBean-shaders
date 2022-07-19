@@ -1,4 +1,4 @@
-#version 120
+#version 130
 
 #define DRAW_SHADOW_MAP gcolor //Configures which buffer to draw to the screen [gcolor shadowcolor0 shadowtex0 shadowtex1]
 

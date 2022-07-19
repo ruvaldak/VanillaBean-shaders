@@ -1,4 +1,4 @@
-#version 120
+#version 130
 
 //Get Entity id.
 attribute float mc_Entity;

@@ -1,4 +1,5 @@
-#version 120
+#version 130
+//#extension GL_EXT_gpu_shader4: enable
 
 uniform sampler2D colortex0;
 uniform sampler2D colortex3;

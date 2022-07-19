@@ -1,4 +1,4 @@
-#version 120
+#version 130
 
 varying vec2 texcoord;
 varying vec4 glcolor;

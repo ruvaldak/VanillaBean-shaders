@@ -1,4 +1,4 @@
-#version 120
+#version 130
 
 //Model * view matrix.
 uniform mat4 gbufferModelView;

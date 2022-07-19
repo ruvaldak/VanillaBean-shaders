@@ -1,4 +1,4 @@
-#version 120
+#version 130
 
 varying vec4 color;
 varying vec2 texCoord;

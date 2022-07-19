@@ -29,6 +29,8 @@ fogify(max(upDot, 0.0), 0.25) = 0.25 / (max(upDot, 0.0) * max(upDot, 0.0) + 0.25
 
 
 //0 = default, 1 = water, 2 = lava.
+//#extension GL_EXT_gpu_shader4: enable
+
 uniform int isEyeInWater;
 
 uniform float viewHeight;
