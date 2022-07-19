@@ -2,4 +2,4 @@
 
 #define VSH
 
-#include "/programs/gbuffers_hand.glsl"
+#include "/programs/final.glsl"

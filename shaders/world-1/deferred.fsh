@@ -2,4 +2,4 @@
 
 #define FSH
 
-#include "/programs/gbuffers_hand.glsl"
+#include "/programs/deferred.glsl"
