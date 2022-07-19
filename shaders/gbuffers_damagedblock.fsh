@@ -24,19 +24,19 @@ uniform float blindness;
 #include "/lib/fog.glsl"
 
 void main() {
-	//vec4 color = texture2D(texture, texcoord) * glcolor;
-	//color *= texture2D(lightmap, lmcoord);
+	vec4 color = texture2D(texture, texcoord) * glcolor;
+	color *= texture2D(lightmap, lmcoord);
 	
 	//Combine lightmap with blindness.
-    //vec3 lightmapBlind = (1.-blindness) * texture2D(lightmap,lmcoord).rgb;
-	//color *= vec4(lightmapBlind,1);
+    vec3 lightmapBlind = (1.-blindness) * texture2D(lightmap,lmcoord).rgb;
+	color *= vec4(lightmapBlind,1);
     //Sample texture times lighting.
     //vec4 color = glcolor * texture2D(texture,texcoord);
     //Apply entity flashes.
     //color.rgb = mix(color.rgb,entityColor.rgb,entityColor.a);
 
-	vec3 light = (1.-blindness) * texture2D(lightmap, lmcoord).rgb;
-	vec4 color = glcolor * vec4(light, 1) * texture2D(texture, texcoord);
+	//vec3 light = (1.-blindness) * texture2D(lightmap, lmcoord).rgb;
+	//vec4 color = glcolor * vec4(light, 1) * texture2D(texture, texcoord);
 
 	//Apply fog
     //#include "/lib/fog.glsl"

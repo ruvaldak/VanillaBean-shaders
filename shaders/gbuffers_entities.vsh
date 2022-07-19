@@ -51,23 +51,6 @@ void main() {
 	//glcolor = gl_Color;
 	
 	glcolor = vec4(gl_Color.rgb * light, gl_Color.a);
-	
-	#ifdef SHADOWS
-	float lightDot = dot(normalize(shadowLightPosition), normalize(gl_NormalMatrix * gl_Normal));
-	if (lightDot > 0.0) { //vertex is facing towards the sun
-		vec4 playerPos = gbufferModelViewInverse * viewPos;
-		shadowPos = shadowProjection * (shadowModelView * playerPos); //convert to shadow space
-		float distortFactor = getDistortFactor(shadowPos.xy);
-		shadowPos.xyz = distort(shadowPos.xyz, distortFactor); //apply shadow distortion
-		shadowPos.xyz = shadowPos.xyz * 0.5 + 0.5; //convert from -1 ~ +1 to 0 ~ 1
-		shadowPos.z -= SHADOW_BIAS * (distortFactor * distortFactor) / abs(lightDot); //apply shadow bias
-	}
-	else { //vertex is facing away from the sun
-		lmcoord.y *= SHADOW_BRIGHTNESS; //guaranteed to be in shadows. reduce light level immediately.
-		shadowPos = vec4(0.0); //mark that this vertex does not need to check the shadow map.
-	}
-	shadowPos.w = lightDot;
-	#endif
-	
+		
 	gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 }

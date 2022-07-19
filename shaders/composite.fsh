@@ -15,19 +15,6 @@ uniform mat4 shadowProjection;
 
 varying vec2 texcoord;
 
-#include "distort.glsl"
-
-float GetShadow(float depth) {
-    vec3 ClipSpace = vec3(texcoord, depth) * 2.0f - 1.0f;
-    vec4 ViewW = gbufferProjectionInverse * vec4(ClipSpace, 1.0f);
-    vec3 View = ViewW.xyz / ViewW.w;
-    vec4 World = gbufferModelViewInverse * vec4(View, 1.0f);
-    vec4 ShadowSpace = shadowProjection * shadowModelView * World;
-    ShadowSpace.xy = DistortPosition(ShadowSpace.xy);
-    vec3 SampleCoords = ShadowSpace.xyz * 0.5f + 0.5f;
-    return step(SampleCoords.z - SHADOW_BIAS, texture2D(shadowtex0, SampleCoords.xy).r);
-}
-
 void main() {
 	vec3 color = texture2D(gcolor, texcoord).rgb;
 

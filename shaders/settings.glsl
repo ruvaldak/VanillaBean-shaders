@@ -1,5 +1,7 @@
 const float PI = 3.1415926535897932384626433832795;
 
+#define EPS 1e-4
+
 #define SHARPENING 2 // [0 1 2]
 #define CAS_AMOUNT 0.5 // [0.1 0.2 0.3 0.4 0.5 0.6 0.7 0.8 0.9 1.0]
 #define SSAO
@@ -43,6 +45,9 @@ const int shadowMapResolution = SHADOW_MAP_RESOLUTION; //Resolution of the shado
 #define SHADOW_BRIGHTNESS 0.75 //Light levels are multiplied by this number when the surface is in shadows [0.00 0.05 0.10 0.15 0.20 0.25 0.30 0.35 0.40 0.45 0.50 0.55 0.60 0.65 0.70 0.75 0.80 0.85 0.90 0.95 1.00]
 
 #define DRAW_SHADOW_MAP gcolor //Configures which buffer to draw to the screen [gcolor shadowcolor0 shadowtex0 shadowtex1]
+
+#define ANISO_FILTER
+#define AF_SAMPLES 16.0
 
 //#define COLOR_FILTER
 #define COLOR_FILTER_RED 1.3

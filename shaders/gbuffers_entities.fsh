@@ -44,48 +44,7 @@ uniform float blindness;
 void main() {	
     vec4 color = glcolor * texture2D(texture,texcoord);
     vec2 lm = lmcoord;
-
-    #ifdef SHADOWS
-    float shadowSamples = texture2D(shadowtex0, shadowPos.xy).r;
-
-    float shadowSamples1 = 0.0;
-	int samples = 1;
-
-	for (int x = 0; x < SHADOW_SAMPLES_COUNT; x++) {
-		for (int y = 0; y < SHADOW_SAMPLES_COUNT; y++) {
-			float shadow = texture2D(shadowtex0, shadowPos.xy + (vec2(x, y) / shadowMapResolution)).r;
-			shadowSamples1 += shadow;
-
-			samples++;
-		}
-	}
-
-	shadowSamples = shadowSamples1 / float(samples);
-
 	
-	if (shadowPos.w > 0.0) {
-		#if COLORED_SHADOWS == 0
-			if (texture2D(shadowtex0, shadowPos.xy).r < shadowPos.z) {
-		#else
-			if (texture2D(shadowtex1, shadowPos.xy).r < shadowPos.z) {
-		#endif
-			lm.y *= SHADOW_BRIGHTNESS;
-		}
-		else {
-			lm.y = mix(31.0 / 32.0 * (1.0), 31.0 / 32.0, sqrt(shadowPos.w));
-			#if COLORED_SHADOWS == 1
-				if (texture2D(shadowtex0, shadowPos.xy).r < shadowPos.z) {
-					vec4 shadowLightColor = texture2D(shadowcolor0, shadowPos.xy);
-					shadowLightColor.rgb = mix(vec3(1.0), shadowLightColor.rgb, shadowLightColor.a);
-					shadowLightColor.rgb = mix(shadowLightColor.rgb, vec3(1.0), lm.x);
-					color.rgb *= shadowLightColor.rgb;
-				}
-			#endif
-		}
-	}
-	#endif
-	
-
 	//Combine lightmap with blindness.
     vec3 light = (1.-blindness) * texture2D(lightmap,lm).rgb;
 	color *= vec4(light,1);

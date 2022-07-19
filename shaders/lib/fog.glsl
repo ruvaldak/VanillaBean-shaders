@@ -72,8 +72,8 @@ void doFog(inout vec4 col, inout vec4 fog, float offset) {
     float upDot = dot(normalize(fogpos.xyz), gbufferModelView[1].xyz);
     fog.rgb = mix(skyColor, fogColor, (0.25 / (max(upDot, 0.0) * max(upDot, 0.0) + 0.25)));
 
-    if (!(isEyeInWater == 1.0 || isEyeInWater == 2.0))
-        fog.rgb += skyTexture.rgb;
+    /*if (!(isEyeInWater == 1.0 || isEyeInWater == 2.0))
+        fog.rgb += skyTexture.rgb;*/
 
     //Apply the fog
     col.rgb = mix(col.rgb, fog.rgb, fog.a);
