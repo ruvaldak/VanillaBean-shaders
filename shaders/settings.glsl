@@ -21,7 +21,7 @@
 #define AO_BLUR_WEIGHT 0.0
 
 #define ANISO_FILTER
-#define AF_SAMPLES 16.0
+#define AF_SAMPLES 8.0 //[2.0 4.0 8.0 16.0]
 
 //#define COLOR_FILTER
 #define COLOR_FILTER_RED 1.3
