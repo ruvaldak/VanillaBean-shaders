@@ -128,8 +128,8 @@ void main() {
 		for (int j = 0; j < AO_SAMPLES; ++j) 
 		{
 			float angle = 2.4 * j + 2*PI*dither2;
-			vec2 coord1 = vec2(cos(angle), sin(angle))*2;
-			coord1 *= sqrt((j+dither1)/AO_SAMPLES)*rad;
+			vec2 coord1 = (vec2(cos(angle), sin(angle))*2) * sqrt((j+dither1)/AO_SAMPLES)*rad;
+			//coord1 *= sqrt((j+dither1)/AO_SAMPLES)*rad;
 			vec2 coord2 = vec2(coord1.x*wtf - coord1.y*wtf, coord1.x*wtf + coord1.y*wtf); 
 
 			for(int i = 0; i < AO_RADIUS_SAMPLES; i++) {
@@ -138,7 +138,7 @@ void main() {
 				if(i%2==0)
 					ao += doAmbientOcclusion(texcoord,coord1*mult, p, n); 
 				else
-					ao += doAmbientOcclusion(texcoord,coord1*mult, p, n); 
+					ao += doAmbientOcclusion(texcoord,coord2*mult, p, n); 
 			}
 		}
 		
