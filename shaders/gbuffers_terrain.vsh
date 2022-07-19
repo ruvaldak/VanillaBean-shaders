@@ -19,8 +19,6 @@ varying float entity;
 varying float light;
 varying vec4 spriteBounds;
 
-#include "/distort.glsl"
-
 uniform int frameCounter;
 uniform float frameTimeCounter;
 

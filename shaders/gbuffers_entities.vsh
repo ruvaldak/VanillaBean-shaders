@@ -13,8 +13,6 @@ varying vec2 texcoord;
 varying vec3 bufferNormal;
 varying vec4 glcolor;
 
-#include "/distort.glsl"
-
 uniform int frameCounter;
 
 uniform float viewWidth, viewHeight;
