@@ -42,6 +42,7 @@ uniform vec3 skyColor;
 uniform sampler2D noisetex;
 uniform int frameCounter;
 uniform sampler2D colortex4;
+uniform sampler2D colortex7;
 
 const int GL_LINEAR = 9729;
 const int GL_EXP = 2048;
@@ -59,6 +60,7 @@ float interleavedGradientNoise(vec2 pos, int t) {
 
 void doFog(inout vec4 col, inout vec4 fog, float offset) {
     vec4 skyTexture = texture2D(colortex4, gl_FragCoord.xy / vec2(viewWidth, viewHeight));
+    vec3 skyCol = texture2D(colortex7, gl_FragCoord.xy / vec2(viewWidth, viewHeight)).rgb;
 
     if(fogMode == GL_EXP) //exponential fog
         fog.a = 1.-exp(-gl_FogFragCoord * gl_Fog.density);
@@ -72,10 +74,14 @@ void doFog(inout vec4 col, inout vec4 fog, float offset) {
     fogpos = (gbufferProjectionInverse * fogpos);
     //fogpos.xy *= dither.xy;
     float upDot = dot(normalize(fogpos.xyz), gbufferModelView[1].xyz);
-    fog.rgb = mix(skyColor, fogColor, (0.25 / (max(upDot, 0.0) * max(upDot, 0.0) + 0.25)));
+    #ifdef NETHER
+        fog.rgb = mix(skyColor, fogColor, (0.25 / (max(upDot, 0.0) * max(upDot, 0.0) + 0.25)));
+    #else
+        fog.rgb = mix(skyColor, skyCol, (0.25 / (max(upDot, 0.0) * max(upDot, 0.0) + 0.25)));
+    #endif
 
     /*if (!(isEyeInWater == 1.0 || isEyeInWater == 2.0))
-        fog.rgb += skyTexture.rgb;*/
+        fog.rgb += skyTexture.rgb;//*/
 
     //Apply the fog
     col.rgb = mix(col.rgb, fog.rgb, fog.a);

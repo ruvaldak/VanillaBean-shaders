@@ -146,7 +146,8 @@ out vec4 glcolor;
 
 uniform int frameCounter;
 
-uniform float viewWidth, viewHeight;
+uniform float viewWidth;
+uniform float viewHeight;
 
 #include "/bsl_lib/util/jitter.glsl"
 

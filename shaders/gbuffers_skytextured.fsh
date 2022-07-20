@@ -2,4 +2,4 @@
 
 #define FSH
 
-#include "/programs/gbuffers_skybasic.glsl"
+#include "/programs/gbuffers_skytextured.glsl"

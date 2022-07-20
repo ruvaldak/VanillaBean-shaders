@@ -12,33 +12,36 @@ uniform sampler2D colortex4;
 
 //0-1 amount of blindness.
 uniform float blindness;
-//0 = default, 1 = water, 2 = lava.
-uniform int isEyeInWater;
 
-uniform float viewHeight;
-uniform float viewWidth;
+uniform int frameCounter;
+
 uniform mat4 gbufferModelView;
-uniform mat4 gbufferProjectionInverse;
-uniform vec3 fogColor;
-uniform vec3 skyColor;
-
-const int GL_LINEAR = 9729;
-const int GL_EXP = 2048;
-uniform int fogMode;
+uniform mat4 gbufferModelViewInverse;
+uniform float viewWidth, viewHeight;
 
 in vec2 texcoord;
 in vec4 glcolor;
 
-void main() {
-	vec4 color = texture2D(texture, texcoord) * glcolor;
+float interleavedGradientNoise(vec2 pos) {
+	return fract(52.9829189 * fract(0.06711056 * pos.x + (0.00583715 * pos.y)));
+}
 
-	//Apply fog
-	//#include "/lib/fog.glsl"
+float interleavedGradientNoise(vec2 pos, int t) {
+	return interleavedGradientNoise(pos + 5.588238 * (t & 127));
+}
+
+void main() {
+	vec3 light = vec3(1.-blindness);
+    //Sample texture times Visibility.
+    vec4 color = glcolor * vec4(light,1) * texture2D(texture,texcoord);
+
+	//float dither = interleavedGradientNoise(gl_FragCoord.xy, frameCounter << 1);
+	//color.rgb = mix(color.rgb, vec3(1.0), (dither - 0.5) * 0.23);
+	//fog += (dither - 0.5) * 0.23;
 
 /* DRAWBUFFERS:049 */
 	gl_FragData[0] = color; //gcolor
 	gl_FragData[1] = color; //gcolor
-	//gl_FragData[1] = fog;
 	gl_FragData[2] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
@@ -48,31 +51,23 @@ void main() {
 //Model * view matrix and it's inverse.
 uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
+uniform float viewWidth, viewHeight;
 
 out vec2 texcoord;
 out vec4 glcolor;
 
-uniform int frameCounter;
-
-uniform float viewWidth, viewHeight;
-uniform float frameTimeCounter;
-
 #include "/bsl_lib/util/jitter.glsl"
 
 void main() {
-	//Calculate world space position.
+    //Calculate world space position.
     vec3 pos = (gl_ModelViewMatrix * gl_Vertex).xyz;
     pos = (gbufferModelViewInverse * vec4(pos,1)).xyz;
 
-    //texcoord = gl_Position * 0.5 + 0.5;
-
     //Output position and fog to fragment shader.
     gl_Position = gl_ProjectionMatrix * gbufferModelView * vec4(pos,1);
-    gl_FogFragCoord = length(pos);
-
-	//gl_Position = ftransform();
+	
+	glcolor = vec4(gl_Color.rgb, gl_Color.a);
 	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-	glcolor = gl_Color;
 	
 	gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 }

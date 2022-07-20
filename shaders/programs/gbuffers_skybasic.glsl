@@ -1,98 +1,113 @@
+//Thanks to Emin for the vast majority of this code
+
 #ifdef FSH
 /*----------- FRAGMENT SHADER -----------*/
 
-#include "/settings.glsl"
+//Extensions//
 
-uniform float viewHeight;
+//Varyings//
+in float vanillaStars;
+
+in vec3 upVec;
+
+in vec4 glColor;
+
+//Uniforms//
+uniform int isEyeInWater;
+
 uniform float viewWidth;
-uniform mat4 gbufferModelView;
-uniform mat4 gbufferProjectionInverse;
+uniform float viewHeight;
 uniform vec3 fogColor;
 uniform vec3 skyColor;
 
-in vec4 glcolor;
+uniform mat4 gbufferProjectionInverse;
 
-in vec4 starData; //rgb = star color, a = flag for weather or not this pixel is a star.
+//Attributes//
 
-uniform sampler2D noisetex;
-uniform sampler2D colortex4;
-uniform sampler2D colortex9;
-/*
-const int colortex9Format = R32F;
-*/
+//Optifine Constants//
 
-uniform float frameTimeCounter;
-uniform int frameCounter;
+//Common Variables//
 
-const int noiseTextureResolution = 128;
+//Common Functions//
+float Bayer2  (vec2 c) { c = 0.5 * floor(c); return fract(1.5 * fract(c.y) + c.x); }
+float Bayer4  (vec2 c) { return 0.25 * Bayer2(0.5 * c) + Bayer2(c); }
 
-//vec4 skyTexture = texture2D(colortex4, gl_FragCoord.xy / vec2(viewWidth, viewHeight));
+//Includes//
 
-float fogify(float x, float w) {
-	return (w / (x * x + w));
-}
-
-vec3 calcSkyColor(vec3 pos) {
-	float upDot = dot(pos, gbufferModelView[1].xyz); //not much, what's up with you?
-	return mix(skyColor, fogColor, fogify(max(upDot, 0.0), 0.25));
-}
-
-float interleavedGradientNoise(vec2 pos) {
-	return fract(52.9829189 * fract(0.06711056 * pos.x + (0.00583715 * pos.y)));
-}
-
-float interleavedGradientNoise(vec2 pos, int t) {
-	return interleavedGradientNoise(pos + 5.588238 * (t & 127));
-}
-
+//Program//
 void main() {
-	vec4 color = glcolor;
-	//vec4 fog;
-	if (starData.a > 0.5) {
-		color = vec4(starData.rgb, 1.0);
-		//vec4 fog = vec4(1.0,1.0,1.0,1.0);
-	}
-	else {
-		vec4 pos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight) * 2.0 - 1.0, 1.0, 1.0);
-		//vec4 dither = fract(texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution) + (1.0 / (0.5 + 0.5 * sqrt(5.0))) * (frameCounter & 127));
-		//vec4 dither = texture2D(noisetex, gl_FragCoord.xy / noiseTextureResolution);
-		float dither = interleavedGradientNoise(gl_FragCoord.xy, frameCounter);
-		pos = (gbufferProjectionInverse * pos);
-		//pos.xy = pos.xy*dither.xy;
-		color = vec4(calcSkyColor(normalize(pos.xyz)),1.0);
-		color += dither / 255.0f;
-	}
+	vec4 color = vec4(glColor.rgb, 1.0);
+	
+	if (vanillaStars < 0.5) {
+		vec4 screenPos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z, 1.0);
+		vec4 viewPos = gbufferProjectionInverse * (screenPos * 2.0 - 1.0);
+		viewPos /= viewPos.w;
+		vec3 nViewPos = normalize(viewPos.xyz);
+		float NdotU = dot(nViewPos, upVec);
 
-/* DRAWBUFFERS:09 */
-	gl_FragData[0] = color; //gcolor
-	gl_FragData[1] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
+		if (isEyeInWater == 0) {
+			float NdotUM = 1.0 - NdotU;
+			NdotUM *= NdotUM;
+			NdotUM *= NdotUM;
+			NdotUM = min(NdotUM * NdotUM * 1.7, 1.0);
+
+			color.rgb = mix(skyColor, fogColor, NdotUM);
+			
+			if (glColor.a < 0.999) color.rgb = mix(color.rgb, glColor.rgb, glColor.a);
+		} else if (isEyeInWater == 1) {
+			float NdotUM = 1.0 - clamp((NdotU - 0.25) / 0.75, 0.0, 1.0);
+			color.rgb = mix(skyColor, fogColor, NdotUM);
+		} else if (isEyeInWater >= 2) {
+			color.rgb = fogColor;
+		}
+
+		float dither = Bayer4(gl_FragCoord.xy);
+		color.rgb += (dither - 0.5) / 128.0;
+	} else color.a = glColor.a;
+
+/* DRAWBUFFERS:079 */
+	gl_FragData[0] = color;
+	gl_FragData[1] = color;
+	gl_FragData[2] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 #elif defined VSH
 /*----------- VERTEX SHADER -----------*/
 
-//Model * view matrix and it's inverse.
+//Varyings//
+out float vanillaStars;
+
+out vec3 upVec;
+
+out vec4 glColor;
+
+//Uniforms//
 uniform mat4 gbufferModelView;
-uniform mat4 gbufferModelViewInverse;
+uniform float viewWidth;
+uniform float viewHeight;
 
-//Pass vertex information to fragment shader.
-out vec4 glcolor;
+//Attributes//
 
-out vec4 starData; //rgb = star color, a = flag for weather or not this pixel is a star.
+//Optifine Constants//
 
-uniform int frameCounter;
+//Common Variables//
 
-uniform float viewWidth, viewHeight;
+//Common Functions//
 
+//Includes//
 #include "/bsl_lib/util/jitter.glsl"
 
+//Program//
 void main() {
 	gl_Position = ftransform();
-    
-    glcolor = gl_Color;
-    
-	starData = vec4(gl_Color.rgb, float(gl_Color.r == gl_Color.g && gl_Color.g == gl_Color.b && gl_Color.r > 0.0));
+
+	glColor = gl_Color;
 	
+	upVec = normalize(gbufferModelView[1].xyz);
+	
+	//Vanilla Star Dedection by Builderb0y
+	vanillaStars = float(glColor.r == glColor.g && glColor.g == glColor.b && glColor.r > 0.0);
+
 	gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 }
 

@@ -39,7 +39,7 @@ void main() {
 
 	//Apply fog
     //#include "/lib/fog.glsl"
-    vec4 fog;
+    vec4 fog = vec4(1.0);
     doFog(color, fog, FOG_OFFSET_DEFAULT);
 
 /* DRAWBUFFERS:03689 */
@@ -69,7 +69,8 @@ varying vec4 glcolor;
 
 uniform int frameCounter;
 
-uniform float viewWidth, viewHeight;
+uniform float viewWidth;
+uniform float viewHeight;
 
 #include "/bsl_lib/util/jitter.glsl"
 

@@ -11,7 +11,7 @@ in vec4 glcolor;
 #include "/lib/fog.glsl"
 
 void main() {
-    vec4 fog;
+    vec4 fog = vec4(1.0);
 	vec4 color = texture2D(texture, texcoord) * glcolor;
 
 	doFog(color, fog, FOG_OFFSET_DEFAULT);
@@ -33,7 +33,8 @@ out vec3 playerPos;
 uniform mat4 gbufferModelViewInverse;
 uniform int frameCounter;
 
-uniform float viewWidth, viewHeight;
+uniform float viewWidth;
+uniform float viewHeight;
 
 #include "/bsl_lib/util/jitter.glsl"
 

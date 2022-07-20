@@ -37,7 +37,7 @@ void main() {
 
 	//Apply fog
     //#include "/lib/fog.glsl"
-    vec4 fog;
+    vec4 fog = vec4(1.0);
 	doFog(color, fog, FOG_OFFSET_DEFAULT);
 
 /* DRAWBUFFERS:03689 */
@@ -67,7 +67,8 @@ varying vec4 glcolor;
 
 uniform int frameCounter;
 
-uniform float viewWidth, viewHeight;
+uniform float viewWidth;
+uniform float viewHeight;
 
 #include "/bsl_lib/util/jitter.glsl"
 
@@ -86,11 +87,18 @@ void main() {
     bufferNormal = normal;
     //bufferNormal = mat3(gbufferModelViewInverse) * normal;
     //Use flat for flat "blocks" or world space normal for solid blocks.
-    normal = (mc_Entity==1.) ? vec3(0,1,0) : (gbufferModelViewInverse * vec4(normal,1)).xyz;
+    normal = (mc_Entity==1. || mc_Entity == 2. || mc_Entity == 12.) ? vec3(0,1,0) : (gbufferModelViewInverse * vec4(normal,0)).xyz;
     //bufferNormal = normal;
 
     //Calculate simple lighting. Note: This as close as I (XorDev) could get, but it's not perfect!
-    float light = .8-.25*abs(normal.x*.8+normal.z*.0)+normal.y*.2;
+	//Calculate simple lighting. Thanks to @PepperCode1
+    float light = 0.0;
+	#ifdef NETHER
+		//min(x * x * 0.6f + y * y * 0.9f + z * z * 0.8f, 1f);
+		light = min(normal.x * normal.x * 0.6f + normal.y * normal.y * 0.9f + normal.z * normal.z * 0.8f, 1.0f);
+	#else
+		light = min(normal.x * normal.x * 0.6f + normal.y * normal.y * 0.25f * (3.0f + normal.y) + normal.z * normal.z * 0.8f, 1.0f);
+	#endif
 	
 	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
 	lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;

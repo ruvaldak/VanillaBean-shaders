@@ -14,7 +14,7 @@ in vec4 glcolor;
 #include "/lib/fog.glsl"
 
 void main() {
-    vec4 fog;
+    vec4 fog = vec4(1.0);
 	vec4 color = glcolor;
 	color *= texture2D(lightmap, lmcoord);
 	
@@ -40,7 +40,8 @@ out vec4 glcolor;
 
 uniform int frameCounter;
 
-uniform float viewWidth, viewHeight;
+uniform float viewWidth;
+uniform float viewHeight;
 
 #include "/bsl_lib/util/jitter.glsl"
 
