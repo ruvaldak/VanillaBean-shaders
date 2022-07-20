@@ -95,6 +95,9 @@ void SharpenFilter(inout vec3 color, vec2 textureCoord) {
 }
 #endif
 
+#include "/lib/bayer_dither.glsl"
+#include "/lib/color.glsl"
+
 void main()
 {
     vec3 color = texture2DLod(colortex1, coord0, 0).rgb;
@@ -106,6 +109,16 @@ void main()
         color.g = (color.g * COLOR_FILTER_GREEN)+(color.r+color.b) * (-0.1);
         color.b = (color.b * COLOR_FILTER_BLUE)+(color.r+color.g) * (-0.1);
         color = color / (color + 2.2) * 3.0;
+    #endif    
+
+    float luma = linearLuminance(color);
+
+    float dither = Bayer4(gl_FragCoord.xy);
+    
+    #ifdef VIG_DITHER
+        color = mix(color * smoothstep(VIG_STR1, VIG_STR2, 1.0 - pow(distance(coord0, vec2(0.5)), 1.5) + (dither - 0.5) * 0.1), color, smoothstep(VIG_LUMA_WEIGHT1, VIG_LUMA_WEIGHT2, luma));
+    #else
+        color = mix(color * smoothstep(VIG_STR1, VIG_STR2, 1.0 - pow(distance(coord0, vec2(0.5)), 1.5)), color, smoothstep(VIG_LUMA_WEIGHT1, VIG_LUMA_WEIGHT2, luma));
     #endif
 
     /*DRAWBUFFERS:0*/
