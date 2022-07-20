@@ -111,6 +111,7 @@ void main()
         color = color / (color + 2.2) * 3.0;
     #endif    
 
+    #ifdef VIGNETTE
     float luma = linearLuminance(color);
 
     float dither = Bayer4(gl_FragCoord.xy);
@@ -119,6 +120,7 @@ void main()
         color = mix(color * smoothstep(VIG_STR1, VIG_STR2, 1.0 - pow(distance(coord0, vec2(0.5)), 1.5) + (dither - 0.5) * 0.1), color, smoothstep(VIG_LUMA_WEIGHT1, VIG_LUMA_WEIGHT2, luma));
     #else
         color = mix(color * smoothstep(VIG_STR1, VIG_STR2, 1.0 - pow(distance(coord0, vec2(0.5)), 1.5)), color, smoothstep(VIG_LUMA_WEIGHT1, VIG_LUMA_WEIGHT2, luma));
+    #endif
     #endif
 
     /*DRAWBUFFERS:0*/
