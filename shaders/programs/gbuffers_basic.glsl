@@ -5,9 +5,6 @@
 
 uniform sampler2D lightmap;
 
-//0-1 amount of blindness.
-uniform float blindness;
-
 in vec2 lmcoord;
 in vec4 glcolor;
 

@@ -22,9 +22,6 @@ varying vec2 texcoord;
 varying vec4 glcolor;
 varying float entity;
 
-//0-1 amount of blindness.
-uniform float blindness;
-
 #include "/lib/fog.glsl"
 
 void main() {	
@@ -32,7 +29,7 @@ void main() {
     vec2 lm = lmcoord;
 	
 	//Combine lightmap with blindness.
-    vec3 light = (1.-blindness) * texture2D(lightmap,lm).rgb;
+    vec3 light = texture2D(lightmap,lm).rgb;
 	color *= vec4(light,1);
 
 	//Apply fog

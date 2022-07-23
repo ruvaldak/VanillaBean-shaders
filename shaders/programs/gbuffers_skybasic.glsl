@@ -22,6 +22,9 @@ uniform vec3 skyColor;
 
 uniform mat4 gbufferProjectionInverse;
 
+//0-1 amount of blindness.
+uniform float blindness;
+
 //Attributes//
 
 //Optifine Constants//
@@ -64,6 +67,10 @@ void main() {
 		float dither = Bayer4(gl_FragCoord.xy);
 		color.rgb += (dither - 0.5) / 128.0;
 	} else color.a = glColor.a;
+
+	if(blindness > 0.0) {
+        color.rgb -= blindness;
+    }
 
 /* DRAWBUFFERS:079 */
 	gl_FragData[0] = color;

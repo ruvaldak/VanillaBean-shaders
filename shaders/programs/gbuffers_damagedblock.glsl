@@ -19,8 +19,6 @@ in float entity;
 
 //RGB/intensity for hurt entities and flashing creepers.
 uniform vec4 entityColor;
-//0-1 amount of blindness.
-uniform float blindness;
 
 #include "/lib/fog.glsl"
 
@@ -29,7 +27,7 @@ void main() {
 	color *= texture2D(lightmap, lmcoord);
 	
 	//Combine lightmap with blindness.
-    vec3 lightmapBlind = (1.-blindness) * texture2D(lightmap,lmcoord).rgb;
+    vec3 lightmapBlind = texture2D(lightmap,lmcoord).rgb;
 	color *= vec4(lightmapBlind,1);
     //Sample texture times lighting.
     //vec4 color = glcolor * texture2D(texture,texcoord);

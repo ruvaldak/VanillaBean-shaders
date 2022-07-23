@@ -43,6 +43,8 @@ uniform sampler2D noisetex;
 uniform int frameCounter;
 uniform sampler2D colortex4;
 uniform sampler2D colortex7;
+//0-1 amount of blindness.
+uniform float blindness;
 
 const int GL_LINEAR = 9729;
 const int GL_EXP = 2048;
@@ -79,6 +81,10 @@ void doFog(inout vec4 col, inout vec4 fog, float offset) {
     #else
         fog.rgb = mix(skyColor, skyCol, (0.25 / (max(upDot, 0.0) * max(upDot, 0.0) + 0.25)));
     #endif
+
+    if(blindness > 0.0) {
+        fog.rgb -= blindness;
+    }
 
     /*if (!(isEyeInWater == 1.0 || isEyeInWater == 2.0))
         fog.rgb += skyTexture.rgb;//*/

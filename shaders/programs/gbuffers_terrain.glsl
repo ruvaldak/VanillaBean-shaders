@@ -25,9 +25,6 @@ in float light;
 
 in vec4 spriteBounds;
 
-//0-1 amount of blindness.
-uniform float blindness;
-
 #include "/lib/fog.glsl"
 
 float manualDeterminant(mat2 matrix) {
@@ -93,7 +90,7 @@ void main() {
     float depth = gl_FragCoord.z;	
 	
 	//Combine lightmap with blindness.
-    vec3 lightmapBlind = (1.-blindness) * texture2D(lightmap,lm).rgb;
+    vec3 lightmapBlind = texture2D(lightmap,lm).rgb;
 	color *= vec4(lightmapBlind,1);
 
 	//Apply fog
