@@ -14,6 +14,8 @@ const int colortex9Format = R32F;
 
 //uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelViewInverse;
+//RGB/intensity for hurt entities and flashing creepers.
+uniform vec4 entityColor;
 
 varying vec3 bufferNormal;
 
@@ -31,6 +33,7 @@ void main() {
 	//Combine lightmap with blindness.
     vec3 light = texture2D(lightmap,lm).rgb;
 	color *= vec4(light,1);
+    color.rgb = mix(color.rgb,entityColor.rgb,entityColor.a);
 
 	//Apply fog
     //#include "/lib/fog.glsl"
