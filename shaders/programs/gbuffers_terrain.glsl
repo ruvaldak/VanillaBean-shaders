@@ -2,6 +2,8 @@
 /*----------- FRAGMENT SHADER -----------*/
 
 #include "/settings.glsl"
+#include "/lib/color.glsl"
+#include "/lib/fog.glsl"
 
 uniform sampler2D lightmap;
 uniform sampler2D depthtex0;
@@ -10,6 +12,7 @@ uniform sampler2D texture;
 uniform sampler2D colortex9;
 /*
 const int colortex9Format = R32F;
+const int colortex0Format = R11F_G11F_B10F;
 */
 
 //uniform mat4 gbufferProjectionInverse;
@@ -24,8 +27,6 @@ in float entity;
 in float light;
 
 in vec4 spriteBounds;
-
-#include "/lib/fog.glsl"
 
 float manualDeterminant(mat2 matrix) {
     return matrix[0].x * matrix[1].y - matrix[0].y * matrix[1].x;
@@ -75,14 +76,8 @@ void main() {
 
 
 	vec2 spriteDimensions = vec2(spriteBounds.z - spriteBounds.x, spriteBounds.w - spriteBounds.y);
-	vec4 color;
-	/*
-	if(entity==1.) {
-		color = glcolor * texture2D(texture,texcoord);
-	} else {
-		color = textureAF(texture, texcoord, AF_SAMPLES, spriteDimensions, spriteBounds.xy, viewHeight) * glcolor;
-	}
-	*/
+	vec4 color = vec4(0.0f);
+
 	#ifdef ANISO_FILTER
 		color = textureAF(texture, texcoord, AF_SAMPLES, spriteDimensions, spriteBounds.xy, viewHeight) * glcolor;
 	#else
@@ -98,7 +93,7 @@ void main() {
     //#include "/lib/fog.glsl"
     vec4 fog = vec4(1.0);
     doFog(color, fog, FOG_OFFSET_DEFAULT);
-
+	color.rgb = sRGBToLinear(color.rgb);
 /* DRAWBUFFERS:03689 */
 	gl_FragData[0] = color; //gcolor
 	//gl_FragData[2] = vec4(lmcoord, 0.0f, 1.0f);

@@ -9,11 +9,14 @@ varying vec2 texcoord;
 varying vec4 glcolor;
 
 #include "/lib/fog.glsl"
+#include "/lib/color.glsl"
 
 void main() {
 	vec4 color = texture2D(texture, texcoord) * glcolor;
 	vec4 fog = vec4(1.0);
 	doFog(color, fog, FOG_OFFSET_DEFAULT);
+
+	color.rgb = sRGBToLinear(color.rgb);
 
 /* DRAWBUFFERS:0 */
 	gl_FragData[0] = color; //gcolor

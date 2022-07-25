@@ -2,13 +2,16 @@
 /*----------- FRAGMENT SHADER -----------*/
 
 #include "/settings.glsl"
+#include "/lib/fog.glsl"
+#include "/lib/color.glsl"
 
 uniform sampler2D lightmap;
+/*
+const int colortex0Format = R11F_G11F_B10F;
+*/
 
 in vec2 lmcoord;
 in vec4 glcolor;
-
-#include "/lib/fog.glsl"
 
 void main() {
     vec4 fog = vec4(1.0);
@@ -17,6 +20,7 @@ void main() {
 	
 	//Apply fog
 	doFog(color, fog, FOG_OFFSET_DEFAULT);
+	color.rgb = sRGBToLinear(color.rgb);
 	
 	//lolerror
 

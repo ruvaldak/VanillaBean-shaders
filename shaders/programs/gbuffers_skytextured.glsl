@@ -1,6 +1,8 @@
 #ifdef FSH
 /*----------- FRAGMENT SHADER -----------*/
 
+#include "/lib/color.glsl"
+
 uniform sampler2D texture;
 
 uniform sampler2D colortex9;
@@ -38,6 +40,8 @@ void main() {
 	//float dither = interleavedGradientNoise(gl_FragCoord.xy, frameCounter << 1);
 	//color.rgb = mix(color.rgb, vec3(1.0), (dither - 0.5) * 0.23);
 	//fog += (dither - 0.5) * 0.23;
+
+	color.rgb = sRGBToLinear(color.rgb);
 
 /* DRAWBUFFERS:049 */
 	gl_FragData[0] = color; //gcolor

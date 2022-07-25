@@ -3,6 +3,9 @@
 
 uniform sampler2D lightmap;
 uniform sampler2D texture;
+/*
+const int colortex0Format = R11F_G11F_B10F;
+*/
 
 varying vec2 lmcoord;
 varying vec2 texcoord;
@@ -10,6 +13,7 @@ varying vec4 glcolor;
 
 #include "/lib/fog.glsl"
 #include "/settings.glsl"
+#include "/lib/color.glsl"
 
 void main() {
 	vec4 color = texture2D(texture, texcoord) * glcolor;
@@ -17,6 +21,8 @@ void main() {
 
 	vec4 fog = vec4(1.0);
     doFog(color, fog, FOG_OFFSET_DEFAULT);
+
+	color.rgb = sRGBToLinear(color.rgb);
 
 /* DRAWBUFFERS:0 */
 	gl_FragData[0] = color; //gcolor

@@ -2,6 +2,8 @@
 /*----------- FRAGMENT SHADER -----------*/
 
 #include "/settings.glsl"
+#include "/lib/color.glsl"
+#include "/lib/bayer_dither.glsl"
 
 uniform sampler2D colortex1;
 
@@ -95,9 +97,6 @@ void SharpenFilter(inout vec3 color, vec2 textureCoord) {
 }
 #endif
 
-#include "/lib/bayer_dither.glsl"
-#include "/lib/color.glsl"
-
 void main()
 {
     vec3 color = texture2DLod(colortex1, coord0, 0).rgb;
@@ -123,6 +122,7 @@ void main()
     #endif
     #endif
 
+    color = linearTosRGB(color);
     /*DRAWBUFFERS:0*/
     gl_FragData[0] = vec4(color, 1.0f);
 }

@@ -2,6 +2,7 @@
 /*----------- FRAGMENT SHADER -----------*/
 
 #include "/settings.glsl"
+#include "/lib/color.glsl"
 
 uniform sampler2D texture;
 
@@ -12,6 +13,7 @@ in vec4 glcolor;
 
 void main() {
 	vec4 color = texture2D(texture, texcoord) * glcolor;
+    color.rgb = sRGBToLinear(color.rgb);
 
 /* DRAWBUFFERS:0 */
 	gl_FragData[0] = color; //gcolor

@@ -2,6 +2,8 @@
 /*----------- FRAGMENT SHADER -----------*/
 
 #include "/settings.glsl"
+#include "/lib/color.glsl"
+#include "/lib/fog.glsl"
 
 uniform sampler2D lightmap;
 uniform sampler2D depthtex0;
@@ -10,6 +12,7 @@ uniform sampler2D texture;
 uniform sampler2D colortex9;
 /*
 const int colortex9Format = R32F;
+const int colortex0Format = R11F_G11F_B10F;
 */
 
 //uniform mat4 gbufferProjectionInverse;
@@ -24,8 +27,6 @@ varying vec2 texcoord;
 varying vec4 glcolor;
 varying float entity;
 
-#include "/lib/fog.glsl"
-
 void main() {	
     vec4 color = glcolor * texture2D(texture,texcoord);
     vec2 lm = lmcoord;
@@ -39,6 +40,8 @@ void main() {
     //#include "/lib/fog.glsl"
     vec4 fog = vec4(1.0);
 	doFog(color, fog, FOG_OFFSET_DEFAULT);
+	color.rgb = sRGBToLinear(color.rgb);
+
 
 /* DRAWBUFFERS:03689 */
 	gl_FragData[0] = color; //gcolor

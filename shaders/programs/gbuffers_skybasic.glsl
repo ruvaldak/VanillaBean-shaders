@@ -24,6 +24,9 @@ uniform mat4 gbufferProjectionInverse;
 
 //0-1 amount of blindness.
 uniform float blindness;
+/*
+const int colortex0Format = R11F_G11F_B10F;
+*/
 
 //Attributes//
 
@@ -36,6 +39,7 @@ float Bayer2  (vec2 c) { c = 0.5 * floor(c); return fract(1.5 * fract(c.y) + c.x
 float Bayer4  (vec2 c) { return 0.25 * Bayer2(0.5 * c) + Bayer2(c); }
 
 //Includes//
+#include "/lib/color.glsl"
 
 //Program//
 void main() {
@@ -73,6 +77,8 @@ void main() {
 	if(blindness > 0.0) {
         color.rgb -= blindness;
     }
+
+	color.rgb = sRGBToLinear(color.rgb);
 
 /* DRAWBUFFERS:079 */
 	gl_FragData[0] = color;
