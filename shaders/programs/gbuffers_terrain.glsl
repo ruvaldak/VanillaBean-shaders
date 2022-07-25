@@ -16,7 +16,7 @@ const int colortex9Format = R32F;
 uniform mat4 gbufferModelViewInverse;
 
 in vec3 normal;
-
+in vec3 viewNormal;
 in vec2 lmcoord;
 in vec2 texcoord;
 in vec4 glcolor;
@@ -71,6 +71,9 @@ vec4 textureAF(sampler2D sampler, vec2 uv, float samples, vec2 spriteDimensions,
 }
 
 void main() {	
+	
+
+
 	vec2 spriteDimensions = vec2(spriteBounds.z - spriteBounds.x, spriteBounds.w - spriteBounds.y);
 	vec4 color;
 	/*
@@ -89,9 +92,7 @@ void main() {
     vec2 lm = lmcoord;
     float depth = gl_FragCoord.z;	
 	
-	//Combine lightmap with blindness.
-    vec3 lightmapBlind = texture2D(lightmap,lm).rgb;
-	color *= vec4(lightmapBlind,1);
+	color *= vec4(texture2D(lightmap,lm).rgb,1);
 
 	//Apply fog
     //#include "/lib/fog.glsl"
@@ -103,7 +104,7 @@ void main() {
 	//gl_FragData[2] = vec4(lmcoord, 0.0f, 1.0f);
 	gl_FragData[1] = fog;
 	gl_FragData[2] = vec4(entity/255, 0.0f,vec2(1.0f));
-	gl_FragData[3] = vec4(normal * 0.5f + 0.5f, 1.0f);
+	gl_FragData[3] = vec4(viewNormal * 0.5f + 0.5f, 1.0f);
 	gl_FragData[4] = vec4(depth, 0.0f, light, 1.0f);
 }
 
@@ -124,6 +125,7 @@ uniform sampler2D texture;
 out vec2 lmcoord;
 out vec2 texcoord;
 out vec4 glcolor;
+out vec3 viewNormal;
 out vec3 normal;
 out float entity;
 out float light;
@@ -151,6 +153,7 @@ void main() {
 	
     //Calculate view space normal.
     normal = gl_NormalMatrix * gl_Normal;
+	viewNormal = normal;
 
     //Use flat for flat "blocks" or world space normal for solid blocks.
     normal = (mc_Entity==1. || mc_Entity == 2. || mc_Entity == 12.) ? vec3(0,1,0) : (gbufferModelViewInverse * vec4(normal,0)).xyz;
