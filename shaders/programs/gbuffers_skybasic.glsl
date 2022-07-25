@@ -66,15 +66,17 @@ void main() {
 
 		float dither = Bayer4(gl_FragCoord.xy);
 		color.rgb += (dither - 0.5) / 128.0;
+
+		/* DRAWBUFFERS:7 */
+			gl_FragData[0] = color;
 	} else color.a = glColor.a;
 
 	if(blindness > 0.0) {
         color.rgb -= blindness;
     }
 
-/* DRAWBUFFERS:079 */
+/* DRAWBUFFERS:09 */
 	gl_FragData[0] = color;
-	gl_FragData[1] = color;
 	gl_FragData[2] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
