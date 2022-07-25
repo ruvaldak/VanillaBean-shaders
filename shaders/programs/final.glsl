@@ -14,7 +14,7 @@ in vec2 coord0;
 
 /*
 const int colortex0Format = R11F_G11F_B10F; //main scene
-const int colortex1Format = RGB8; //raw translucent, bloom, final scene
+const int colortex1Format = RGB16F; //raw translucent, bloom, final scene
 const int colortex2Format = RGBA16; //temporal data
 */
 

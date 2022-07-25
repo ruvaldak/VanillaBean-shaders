@@ -5,6 +5,9 @@ uniform sampler2D colortex0;
 uniform sampler2D colortex2;
 uniform sampler2D colortex3;
 uniform sampler2D depthtex0;
+/*
+const int colortex0Format = R11F_G11F_B10F;
+*/
 uniform float far;
 
 #include "/settings.glsl"

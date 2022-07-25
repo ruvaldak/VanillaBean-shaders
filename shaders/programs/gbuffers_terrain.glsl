@@ -72,9 +72,6 @@ vec4 textureAF(sampler2D sampler, vec2 uv, float samples, vec2 spriteDimensions,
 }
 
 void main() {	
-	
-
-
 	vec2 spriteDimensions = vec2(spriteBounds.z - spriteBounds.x, spriteBounds.w - spriteBounds.y);
 	vec4 color = vec4(0.0f);
 
@@ -86,11 +83,10 @@ void main() {
 	
     vec2 lm = lmcoord;
     float depth = gl_FragCoord.z;	
-	
+
 	color *= vec4(texture2D(lightmap,lm).rgb,1);
 
 	//Apply fog
-    //#include "/lib/fog.glsl"
     vec4 fog = vec4(1.0);
     doFog(color, fog, FOG_OFFSET_DEFAULT);
 	color.rgb = sRGBToLinear(color.rgb);

@@ -8,6 +8,10 @@ uniform sampler2D depthtex0;
 uniform mat4 gbufferProjectionInverse;
 uniform mat4 gbufferModelViewInverse;
 
+/*
+const int colortex0Format = R11F_G11F_B10F;
+*/
+
 in vec2 texcoord;
 
 void main() {
