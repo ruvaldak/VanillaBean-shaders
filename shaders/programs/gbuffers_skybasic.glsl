@@ -40,6 +40,7 @@ float Bayer4  (vec2 c) { return 0.25 * Bayer2(0.5 * c) + Bayer2(c); }
 //Program//
 void main() {
 	vec4 color = vec4(glColor.rgb, 1.0);
+	vec4 skycol = vec4(0.0);
 	
 	if (vanillaStars < 0.5) {
 		vec4 screenPos = vec4(gl_FragCoord.xy / vec2(viewWidth, viewHeight), gl_FragCoord.z, 1.0);
@@ -66,17 +67,16 @@ void main() {
 
 		float dither = Bayer4(gl_FragCoord.xy);
 		color.rgb += (dither - 0.5) / 128.0;
-
-		/* DRAWBUFFERS:7 */
-			gl_FragData[0] = color;
+		skycol = color;
 	} else color.a = glColor.a;
 
 	if(blindness > 0.0) {
         color.rgb -= blindness;
     }
 
-/* DRAWBUFFERS:09 */
+/* DRAWBUFFERS:079 */
 	gl_FragData[0] = color;
+	gl_FragData[1] = skycol;
 	gl_FragData[2] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
