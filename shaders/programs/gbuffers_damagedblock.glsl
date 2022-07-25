@@ -3,51 +3,18 @@
 
 #include "/settings.glsl"
 
-uniform sampler2D lightmap;
 uniform sampler2D texture;
 
-uniform sampler2D colortex9;
-/*
-const int colortex9Format = R32F;
-*/
-
-in vec2 lmcoord;
 in vec2 texcoord;
 in vec3 bufferNormal;
 in vec4 glcolor;
-in float entity;
 
-//RGB/intensity for hurt entities and flashing creepers.
-uniform vec4 entityColor;
-
-#include "/lib/fog.glsl"
 
 void main() {
 	vec4 color = texture2D(texture, texcoord) * glcolor;
-	color *= texture2D(lightmap, lmcoord);
-	
-	//Combine lightmap with blindness.
-    vec3 lightmapBlind = texture2D(lightmap,lmcoord).rgb;
-	color *= vec4(lightmapBlind,1);
-    //Sample texture times lighting.
-    //vec4 color = glcolor * texture2D(texture,texcoord);
-    //Apply entity flashes.
-    //color.rgb = mix(color.rgb,entityColor.rgb,entityColor.a);
 
-	//vec3 light = (1.-blindness) * texture2D(lightmap, lmcoord).rgb;
-	//vec4 color = glcolor * vec4(light, 1) * texture2D(texture, texcoord);
-
-	//Apply fog
-    //#include "/lib/fog.glsl"
-    vec4 fog = vec4(1.0);
-    doFog(color, fog, FOG_OFFSET_DEFAULT);
-
-/* DRAWBUFFERS:03689 */
+/* DRAWBUFFERS:0 */
 	gl_FragData[0] = color; //gcolor
-	gl_FragData[1] = fog;
-	gl_FragData[2] = vec4(entity/255, 0.0f,vec2(1.0f));
-	gl_FragData[3] = vec4(bufferNormal, 1.0f);
-	gl_FragData[4] = vec4(1.0f, 0.0f, 0.0f, 1.0f);
 }
 
 #elif defined VSH
@@ -61,10 +28,8 @@ uniform mat4 gbufferModelView;
 uniform mat4 gbufferModelViewInverse;
 uniform vec3 cameraPosition;
 
-out vec2 lmcoord;
 out vec2 texcoord;
 out vec4 glcolor;
-out float entity;
 out vec3 bufferNormal;
 
 uniform int frameCounter;
@@ -87,8 +52,6 @@ void main() {
     
     //Calculate view space normal.
     vec3 normal = gl_NormalMatrix * gl_Normal;
-    bufferNormal = normal;
-    //bufferNormal = mat3(gbufferModelViewInverse) * normal;
     //Use flat for flat "blocks" or world space normal for solid blocks.
     normal = (mc_Entity==1. || mc_Entity == 2. || mc_Entity == 12.) ? vec3(0,1,0) : (gbufferModelViewInverse * vec4(normal,1)).xyz;
     //bufferNormal = normal;
@@ -97,12 +60,9 @@ void main() {
     float light = min(normal.x * normal.x * 0.6f + normal.y * normal.y * 0.25f * (3.0f + normal.y) + normal.z * normal.z * 0.8f, 1.0f);
 	
 	texcoord = (gl_TextureMatrix[0] * gl_MultiTexCoord0).xy;
-	lmcoord  = (gl_TextureMatrix[1] * gl_MultiTexCoord1).xy;
 	glcolor = gl_Color;
 	
 	glcolor = vec4(gl_Color.rgb * light, gl_Color.a);
-
-	entity = mc_Entity;
 	
 	//gl_Position.xy = TAAJitter(gl_Position.xy, gl_Position.w);
 }
